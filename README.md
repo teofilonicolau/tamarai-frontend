@@ -1,7 +1,15 @@
+## 🔧 **CORRIGINDO TAMANHO DA LOGO NO README**
 
+---
+
+## **ARQUIVO: `README.md` - VERSÃO CORRIGIDA:**
+
+```markdown
 # TamarUse - Petições Jurídicas Inteligentes
 
-![Logo TamarUse](./public/logoTamar.png)
+<div align="center">
+  <img src="./public/logoTamar.png" alt="Logo TamarUse" width="200" height="auto">
+</div>
 
 ## 🚀 Visão Geral do Projeto
 
@@ -232,7 +240,7 @@ Contribuições são bem-vindas! Para contribuir:
 - `refactor:` refatoração
 - `test:` testes
 
-## 📄 Licença
+## �� Licença
 
 Este projeto está licenciado sob a **Licença MIT**. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
 
@@ -243,10 +251,11 @@ Este projeto está licenciado sob a **Licença MIT**. Consulte o arquivo [LICENS
 - **Especialização**: Desenvolvedor
 - **Email**: [contato@teofilonicolau](mailto:teofilonicolau157@gmail.com)
 
-
 ## 🏆 Powered by TamarAI
 
-![TamarAI](./public/logoTamar.png)
+<div align="center">
+  <img src="./public/logoTamar.png" alt="TamarAI" width="100" height="auto">
+</div>
 
 Este projeto é desenvolvido com a tecnologia **TamarAI**, uma plataforma de inteligência artificial especializada em direito brasileiro, oferecendo soluções inovadoras para automação de petições jurídicas.
 
@@ -254,6 +263,3 @@ Este projeto é desenvolvido com a tecnologia **TamarAI**, uma plataforma de int
 
 **© 2025 TamarUse. Todos os direitos reservados.**
 *Petições jurídicas inteligentes com tecnologia de ponta.*
-
-
----
