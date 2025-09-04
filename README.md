@@ -1,10 +1,5 @@
-## 🔧 **CORRIGINDO TAMANHO DA LOGO NO README**
 
----
 
-## **ARQUIVO: `README.md` - VERSÃO CORRIGIDA:**
-
-```markdown
 # TamarUse - Petições Jurídicas Inteligentes
 
 <div align="center">
