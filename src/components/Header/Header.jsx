@@ -1,10 +1,17 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeftIcon,
+  SunIcon,
+  MoonIcon,
+  QuestionMarkCircleIcon
+} from '@heroicons/react/24/outline';
 
-const Header = () => {
+const Header = ({ darkMode, onToggleTheme }) => {
   const { tipoPeticao } = useParams();
   const navigate = useNavigate();
 
+  // 🎯 TÍTULOS DINÂMICOS
   const getTituloPeticao = (tipo) => {
     const titulos = {
       'aposentadoria-invalidez': 'Aposentadoria por Invalidez',
@@ -16,54 +23,106 @@ const Header = () => {
       'salario-maternidade': 'Salário Maternidade',
       'auxilio-doenca': 'Auxílio Doença',
       'revisao-vida-toda': 'Revisão da Vida Toda',
-      'revisao-beneficio': 'Revisão de Benefício'
+      'revisao-beneficio': 'Revisão de Benefício',
+      'peticao-execucao': 'Petição de Execução',
+      'peticao-monitoria': 'Petição Monitória',
+      'consulta-juridica': 'Consulta Jurídica com IA',
+      'analise-texto': 'Análise de Texto com IA',
+      'parecer-juridico': 'Parecer Jurídico com IA'
     };
-    return titulos[tipo] || 'Petição Previdenciária';
+    return titulos[tipo] || 'Petições Jurídicas com IA';
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header 
+      className="shadow-sm border-b transition-theme"
+      style={{
+        background: 'var(--bg-secondary)',
+        borderColor: 'var(--border)'
+      }}
+    >
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
           
-          {/* Breadcrumb e Título */}
+          {/* 🎯 BREADCRUMB E TÍTULO */}
           <div className="flex items-center space-x-4">
+            
+            {/* 🔙 BOTÃO VOLTAR */}
             <button
               onClick={() => navigate('/')}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center space-x-1"
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg transition-all hover:scale-105"
+              style={{
+                color: 'var(--accent)',
+                background: 'var(--bg-tertiary)'
+              }}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span>Voltar ao Início</span>
+              <ArrowLeftIcon className="w-4 h-4" />
+              <span className="text-sm font-medium">Voltar ao Início</span>
             </button>
             
-            <div className="text-gray-300">|</div>
+            {/* 📍 SEPARADOR */}
+            <div 
+              className="text-gray-300"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              |
+            </div>
             
+            {/* 📋 INFORMAÇÕES DA PÁGINA */}
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">
+              <h1 
+                className="text-xl font-semibold transition-theme"
+                style={{ color: 'var(--text-primary)' }}
+              >
                 {getTituloPeticao(tipoPeticao)}
               </h1>
-              <p className="text-sm text-gray-500">
-                Preencha os dados para gerar sua petição
+              <p 
+                className="text-sm transition-theme"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                Preencha os dados para gerar sua petição profissional
               </p>
             </div>
           </div>
 
-          {/* Ações do Header */}
+          {/* 🎛️ AÇÕES DO HEADER */}
           <div className="flex items-center space-x-4">
             
-            {/* Status */}
+            {/* 🟢 STATUS SISTEMA */}
             <div className="flex items-center space-x-2 text-sm">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-gray-600">Sistema Online</span>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span style={{ color: 'var(--text-secondary)' }}>
+                Sistema Online
+              </span>
             </div>
 
-            {/* Botão de Ajuda */}
-            <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            {/* 🌙 TOGGLE TEMA */}
+            <button
+              onClick={onToggleTheme}
+              className="p-2 rounded-lg transition-all hover:scale-105"
+              style={{
+                background: 'var(--bg-tertiary)',
+                color: 'var(--text-primary)'
+              }}
+              title={darkMode ? 'Ativar modo claro' : 'Ativar modo escuro'}
+            >
+              {darkMode ? (
+                <SunIcon className="w-5 h-5" />
+              ) : (
+                <MoonIcon className="w-5 h-5" />
+              )}
+            </button>
+
+            {/* ❓ BOTÃO AJUDA */}
+            <button 
+              className="p-2 rounded-lg transition-all hover:scale-105"
+              style={{
+                background: 'var(--bg-tertiary)',
+                color: 'var(--text-secondary)'
+              }}
+              title="Central de Ajuda"
+            >
+              <QuestionMarkCircleIcon className="w-5 h-5" />
             </button>
 
           </div>

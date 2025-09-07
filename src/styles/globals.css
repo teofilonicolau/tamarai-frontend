@@ -1,41 +1,300 @@
 @import "tailwindcss";
-
-/* Fonte Inter via Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-/* Variáveis de cor */
+/* ========================================
+   🎨 SISTEMA DE TEMAS PROFISSIONAL CORRIGIDO
+======================================== */
+
 :root {
-  --primary-blue: #007bff;
-  --primary-blue-dark: #0056b3;
+  /* 🌞 MODO CLARO - PALETA JURÍDICA CORRIGIDA */
+  --bg-primary: #F9FAFB;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F3F4F6;
+  --text-primary: #1D4ED8; /* AZUL PARA CONTEÚDO */
+  --text-secondary: #1D4ED8; /* AZUL PARA TEXTOS SECUNDÁRIOS */
+  --text-muted: #6B7280;
+  --text-header-footer: #FFFFFF; /* BRANCO PARA HEADER/FOOTER */
+  --accent: #1D4ED8;
+  --accent-hover: #1E40AF;
+  --icon-color: #1D4ED8; /* AZUL PARA ÍCONES */
+  --success: #10B981;
+  --success-bg: #D1FAE5;
+  --warning: #F59E0B;
+  --warning-bg: #FEF3C7;
+  --error: #EF4444;
+  --error-bg: #FEE2E2;
+  --border: #E5E7EB;
+  --border-light: #F3F4F6;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-lg: rgba(0, 0, 0, 0.15);
+  --sidebar-bg: #1D4ED8; /* AZUL PARA SIDEBAR */
+  --sidebar-text: #FFFFFF;
+  --sidebar-hover: #1E40AF;
+  --sidebar-active: #1E3A8A;
 }
 
-/* Estilo base do body */
-body {
-  font-family: 'Inter', system-ui, sans-serif;
+[data-theme="dark"] {
+  /* 🌙 MODO ESCURO - ELEGÂNCIA CORRIGIDA */
+  --bg-primary: #0D1117;
+  --bg-secondary: #1E1E1E;
+  --bg-tertiary: #262626;
+  --text-primary: #EDEDED;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+  --text-header-footer: #FFFFFF;
+  --accent: #3B82F6;
+  --accent-hover: #2563EB;
+  --icon-color: #B0B0B0; /* CINZA CLARO PARA ÍCONES */
+  --success: #10B981;
+  --success-bg: #064E3B;
+  --warning: #FBBF24;
+  --warning-bg: #92400E;
+  --error: #F87171;
+  --error-bg: #7F1D1D;
+  --border: #374151;
+  --border-light: #4B5563;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-lg: rgba(0, 0, 0, 0.5);
+  --sidebar-bg: #2F2F2F; /* CINZA ESCURO PARA SIDEBAR */
+  --sidebar-text: #FFFFFF;
+  --sidebar-hover: #757575; /* CINZA CLARO PARA HOVER */
+  --sidebar-active: #4A4A4A; /* CINZA MÉDIO PARA ATIVO */
+  --header-bg: #4A4A4A; /* CINZA PARA HEADER */
+  --footer-bg: #2F2F2F; /* CINZA ESCURO PARA FOOTER */
+}
+
+/* ========================================
+   🎯 ESTILOS BASE GLOBAIS
+======================================== */
+
+* {
   margin: 0;
   padding: 0;
-  background-color: #f9fafb;
+  box-sizing: border-box;
 }
 
-/* Scrollbar personalizada */
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* ========================================
+   🎨 COMPONENTES REUTILIZÁVEIS CORRIGIDOS
+======================================== */
+
+.theme-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+}
+
+.theme-card:hover {
+  box-shadow: 0 4px 16px var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.theme-card .card-icon {
+  color: var(--icon-color);
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.theme-card .card-title {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.theme-card .card-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.theme-button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.theme-button:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-lg);
+}
+
+.theme-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.theme-input {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text-primary);
+  font-family: inherit;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.theme-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.theme-textarea {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text-primary);
+  font-family: inherit;
+  transition: all 0.3s ease;
+  width: 100%;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.theme-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.theme-select {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text-primary);
+  font-family: inherit;
+  transition: all 0.3s ease;
+  width: 100%;
+  cursor: pointer;
+}
+
+.theme-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ========================================
+   🎯 SIDEBAR ESPECÍFICA
+======================================== */
+
+.sidebar-container {
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  transition: all 0.3s ease;
+}
+
+.sidebar-item {
+  padding: 12px 16px;
+  margin: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  color: var(--sidebar-text);
+}
+
+.sidebar-item:hover {
+  background: var(--sidebar-hover);
+}
+
+.sidebar-item.active {
+  background: var(--sidebar-active);
+}
+
+.sidebar-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  color: var(--sidebar-text);
+  transition: color 0.3s ease;
+}
+
+/* ========================================
+   🎯 HEADER E FOOTER MODO ESCURO
+======================================== */
+
+[data-theme="dark"] .header-dark {
+  background: var(--header-bg) !important;
+}
+
+[data-theme="dark"] .footer-dark {
+  background: var(--footer-bg) !important;
+}
+
+/* ========================================
+   🎯 ÍCONES DE RECURSOS AVANÇADOS
+======================================== */
+
+.resource-icon {
+  color: var(--icon-color);
+  font-size: 2rem;
+  transition: color 0.3s ease;
+}
+
+.resource-icon.jurisprudencia::before {
+  content: "📚";
+}
+
+.resource-icon.calculadoras::before {
+  content: "🧮";
+}
+
+/* ========================================
+   📱 SCROLLBAR PERSONALIZADA
+======================================== */
+
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--bg-tertiary);
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+  transition: background 0.3s ease;
 }
 
-/* Animações personalizadas */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* ========================================
+   ✨ ANIMAÇÕES PERSONALIZADAS
+======================================== */
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -47,16 +306,197 @@ body {
   }
 }
 
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .animate-fadeInUp {
   animation: fadeInUp 0.6s ease-out forwards;
 }
 
-/* Scroll suave */
-html {
-  scroll-behavior: smooth;
+.animate-slideInRight {
+  animation: slideInRight 0.5s ease-out forwards;
 }
 
-/* Gradiente personalizado */
-.bg-gradient-brand {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+/* ========================================
+   🎯 ESTADOS DE FEEDBACK
+======================================== */
+
+.success-state {
+  background: var(--success-bg);
+  border: 1px solid var(--success);
+  color: var(--success);
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.warning-state {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning);
+  color: var(--warning);
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.error-state {
+  background: var(--error-bg);
+  border: 1px solid var(--error);
+  color: var(--error);
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+/* ========================================
+   📱 RESPONSIVIDADE AVANÇADA
+======================================== */
+
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+  
+  .theme-card {
+    border-radius: 8px;
+    margin: 8px;
+  }
+  
+  .theme-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  
+  .sidebar-container {
+    position: fixed;
+    z-index: 50;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar-container.open {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 13px;
+  }
+  
+  .theme-card {
+    border-radius: 6px;
+    margin: 4px;
+  }
+}
+
+/* ========================================
+   🎨 GRADIENTES PERSONALIZADOS
+======================================== */
+
+.gradient-brand {
+  background: linear-gradient(135deg, var(--accent) 0%, #8B5CF6 100%);
+}
+
+.gradient-success {
+  background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+}
+
+.gradient-warning {
+  background: linear-gradient(135deg, var(--warning) 0%, #D97706 100%);
+}
+
+.gradient-error {
+  background: linear-gradient(135deg, var(--error) 0%, #DC2626 100%);
+}
+
+/* ========================================
+   🔧 UTILITÁRIOS ESPECIAIS
+======================================== */
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--accent), #8B5CF6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .glass-effect {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shadow-elegant {
+  box-shadow: 0 8px 32px var(--shadow);
+}
+
+.border-gradient {
+  border: 2px solid transparent;
+  background: linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box,
+              linear-gradient(135deg, var(--accent), #8B5CF6) border-box;
+}
+
+/* ========================================
+   🎯 CLASSES DE TRANSIÇÃO
+======================================== */
+
+.transition-theme {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+.transition-transform {
+  transition: transform 0.3s ease;
+}
+
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* ========================================
+   🚀 PERFORMANCE OTIMIZADA
+======================================== */
+
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-auto {
+  will-change: auto;
+}
+
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
