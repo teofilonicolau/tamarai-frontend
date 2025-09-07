@@ -1,8 +1,21 @@
+// src/components/Sidebar/Sidebar.jsx
 import React from 'react';
-import { ChevronLeftIcon, ChevronRightIcon, HomeIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, ChevronRightIcon, HomeIcon, CalculatorIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
 const Sidebar = ({ expanded, onToggle }) => {
   const areas = {
+    calculadoras: {
+      titulo: 'Calculadoras',
+      icon: '🧮',
+      peticoes: [
+        { id: 'calculadoras', nome: 'Hub Principal', icon: '🏠' },
+        { id: 'calculadoras/previdenciario', nome: 'Previdenciário', icon: '⚖️' },
+        { id: 'calculadoras/trabalhista', nome: 'Trabalhista', icon: '👷' },
+        { id: 'calculadoras/processual', nome: 'Processual', icon: '📋' },
+        { id: 'calculadoras/financeiro', nome: 'Financeiro', icon: '💰' },
+        { id: 'dashboard', nome: 'Dashboard', icon: '📊' }
+      ]
+    },
     previdenciario: {
       titulo: 'Previdenciário',
       icon: '🏛️',
@@ -59,6 +72,15 @@ const Sidebar = ({ expanded, onToggle }) => {
         { id: 'analise-texto', nome: 'Análise de Texto', icon: '📄' },
         { id: 'parecer-juridico', nome: 'Parecer Jurídico', icon: '📋' }
       ]
+    }
+  };
+
+  const handleNavigation = (peticaoId) => {
+    // Verificar se é calculadora ou dashboard
+    if (peticaoId.startsWith('calculadoras') || peticaoId === 'dashboard') {
+      window.location.href = `/${peticaoId}`;
+    } else {
+      window.location.href = `/peticoes/${peticaoId}`;
     }
   };
 
@@ -135,7 +157,7 @@ const Sidebar = ({ expanded, onToggle }) => {
                 <button
                   key={peticao.id}
                   className="w-full flex items-center px-3 py-3 text-left rounded-lg hover:bg-blue-500 transition-colors group"
-                  onClick={() => window.location.href = `/peticoes/${peticao.id}`}
+                  onClick={() => handleNavigation(peticao.id)}
                 >
                   <span className="text-lg mr-3">{peticao.icon}</span>
                   {expanded && (

@@ -1,3 +1,4 @@
+// src/pages/Home.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,6 +7,20 @@ const Home = () => {
 
   // Todas as petições e ferramentas organizadas por área
   const areas = {
+    calculadoras: {
+      titulo: 'Calculadoras Jurídicas',
+      cor: 'bg-gradient-to-r from-purple-600 to-indigo-600',
+      corHover: 'hover:from-purple-700 hover:to-indigo-700',
+      icon: '🧮',
+      descricao: 'Calculadoras especializadas por área jurídica',
+      peticoes: [
+        { id: 'calculadoras/previdenciario', nome: 'Previdenciário', icon: '⚖️', desc: 'EC 103/2019, Tempo Especial' },
+        { id: 'calculadoras/trabalhista', nome: 'Trabalhista', icon: '👷', desc: 'Horas Extras, Rescisão' },
+        { id: 'calculadoras/processual', nome: 'Processual', icon: '📋', desc: 'Valor da Causa, Liquidação' },
+        { id: 'calculadoras/financeiro', nome: 'Financeiro', icon: '💰', desc: 'Juros, Correção Monetária' },
+        { id: 'dashboard', nome: 'Dashboard', icon: '📊', desc: 'Métricas e Analytics' }
+      ]
+    },
     previdenciario: {
       titulo: 'Previdenciário',
       cor: 'bg-blue-600',
@@ -84,13 +99,18 @@ const Home = () => {
   };
 
   const handleCardClick = (peticaoId) => {
-    navigate(`/peticoes/${peticaoId}`);
+    // Verificar se é calculadora ou dashboard
+    if (peticaoId.startsWith('calculadoras/') || peticaoId === 'dashboard') {
+      navigate(`/${peticaoId}`);
+    } else {
+      navigate(`/peticoes/${peticaoId}`);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       
-      {/* Header - IGUAL AO FOOTER */}
+      {/* Header */}
       <header className="bg-[#0056b3] text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-center">
@@ -122,7 +142,7 @@ const Home = () => {
           </h1>
           <p className="text-xl text-[#0056b3] mb-8 max-w-3xl mx-auto">
             Gere petições profissionais com fundamentação jurídica especializada, 
-            jurisprudência atualizada e tecnologia de ponta.
+            jurisprudência atualizada e calculadoras avançadas.
           </p>
         </div>
       </section>
@@ -135,8 +155,8 @@ const Home = () => {
               Escolha o Tipo de Petição ou Ferramenta Jurídica
             </h2>
             <p className="text-lg text-[#0056b3]">
-              Selecione o card para gerar sua petição inicial ou Ferramenta com 
-              fundamentação jurídica especializada e jurisprudência atualizada
+              Selecione o card para gerar sua petição inicial, usar calculadoras especializadas 
+              ou ferramentas com fundamentação jurídica e jurisprudência atualizada
             </p>
           </div>
 
@@ -165,7 +185,7 @@ const Home = () => {
                       <div className="text-4xl mb-4">{peticao.icon}</div>
                       <h3 className="text-lg font-semibold mb-2">{peticao.nome}</h3>
                       <p className="text-sm opacity-90">
-                        Clique para gerar
+                        {peticao.desc || 'Clique para acessar'}
                       </p>
                     </div>
                   </div>
@@ -185,7 +205,7 @@ const Home = () => {
               Recursos Avançados
             </h2>
             <p className="text-lg text-[#0056b3]">
-              Tecnologia de ponta para petições jurídicas profissionais e ferramentas especializadas.
+              Tecnologia de ponta para petições jurídicas profissionais e calculadoras especializadas.
             </p>
           </div>
 
@@ -208,18 +228,18 @@ const Home = () => {
 
             <div className="text-center">
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">⚡</span>
+                <span className="text-2xl">🧮</span>
               </div>
-              <h3 className="text-lg font-semibold text-[#0056b3] mb-2">Rapidez</h3>
-              <p className="text-[#0056b3]">Petições geradas em segundos com qualidade profissional</p>
+              <h3 className="text-lg font-semibold text-[#0056b3] mb-2">Calculadoras</h3>
+              <p className="text-[#0056b3]">Ferramentas especializadas para cálculos jurídicos precisos</p>
             </div>
 
             <div className="text-center">
               <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🛠️</span>
+                <span className="text-2xl">⚡</span>
               </div>
-              <h3 className="text-lg font-semibold text-[#0056b3] mb-2">Ferramentas Jurídicas</h3>
-              <p className="text-[#0056b3]">Consultas, análises e pareceres com IA especializada</p>
+              <h3 className="text-lg font-semibold text-[#0056b3] mb-2">Rapidez</h3>
+              <p className="text-[#0056b3]">Resultados gerados em segundos com qualidade profissional</p>
             </div>
           </div>
         </div>

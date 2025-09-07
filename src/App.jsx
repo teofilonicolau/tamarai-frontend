@@ -9,6 +9,8 @@ import AnaliseTexto from './components/FormularioDinamico/AnaliseTexto';
 import ParecerJuridico from './components/FormularioDinamico/ParecerJuridico';
 import PeticaoExecucao from './components/FormularioDinamico/PeticaoExecucao';
 import PeticaoMonitoria from './components/FormularioDinamico/PeticaoMonitoria';
+import Calculadoras from './pages/Calculadoras';
+import Dashboard from './pages/Dashboard';
 
 // Componente wrapper para petições
 const PeticaoPage = () => {
@@ -56,6 +58,38 @@ function App() {
           <Route path="/peticoes/:tipoPeticao" element={
             <Layout>
               <PeticaoPage />
+            </Layout>
+          } />
+          
+          {/* Novas rotas adicionadas */}
+          <Route path="/calculadoras" element={
+            <Layout>
+              <Calculadoras />
+            </Layout>
+          } />
+          <Route path="/calculadoras/previdenciario" element={
+            <Layout>
+              <Calculadoras />
+            </Layout>
+          } />
+          <Route path="/calculadoras/trabalhista" element={
+            <Layout>
+              <Calculadoras />
+            </Layout>
+          } />
+          <Route path="/calculadoras/processual" element={
+            <Layout>
+              <Calculadoras />
+            </Layout>
+          } />
+          <Route path="/calculadoras/financeiro" element={
+            <Layout>
+              <Calculadoras />
+            </Layout>
+          } />
+          <Route path="/dashboard" element={
+            <Layout>
+              <Dashboard />
             </Layout>
           } />
         </Routes>

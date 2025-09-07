@@ -1,12 +1,13 @@
+// src/services/api.js
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
-
+// Configuração base da API
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: 'http://localhost:8000',  // ← SEM /api/v1 aqui!
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
-  },
+  }
 });
 
 // Interceptor para requests
@@ -24,11 +25,17 @@ api.interceptors.request.use(
 // Interceptor para responses
 api.interceptors.response.use(
   (response) => {
-    console.log(`✅ ${response.status} ${response.config.url}`);
+    console.log(`✅ Response Success:`, response.data);
     return response;
   },
   (error) => {
     console.error('❌ Response Error:', error.response?.data || error.message);
+    
+    // Tratamento específico de erros
+    if (error.response?.status === 404) {
+      console.error('🔍 Endpoint não encontrado:', error.config?.url);
+    }
+    
     return Promise.reject(error);
   }
 );
