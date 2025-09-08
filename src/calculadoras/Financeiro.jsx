@@ -1,5 +1,8 @@
 // src/calculadoras/Financeiro.jsx
 import React, { useState } from 'react';
+import FormJurosMora from '../components/Calculadoras/FormJurosMora';
+import FormCorrecaoMonetaria from '../components/Calculadoras/FormCorrecaoMonetaria';
+import ResultadosFinanceiros from '../components/Calculadoras/ResultadosFinanceiros'; // NOVO IMPORT
 import api from '../services/api';
 
 const Financeiro = () => {
@@ -32,12 +35,40 @@ const Financeiro = () => {
     try {
       const calculadoraConfig = calculadorasFinanceiras.find(c => c.id === calculadoraAtiva);
       const response = await api.post(calculadoraConfig.endpoint, dados);
-      setResultados(response.data.resultado || response.data);
+      setResultados(response.data.calculo || response.data);
     } catch (error) {
       console.error('Erro no cálculo:', error);
       setErro('Erro ao calcular. Verifique os dados e tente novamente.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const resetarCalculadora = () => {
+    setResultados(null);
+    setErro(null);
+  };
+
+  const renderFormulario = () => {
+    switch (calculadoraAtiva) {
+      case 'juros-mora':
+        return <FormJurosMora onCalcular={calcular} loading={loading} />;
+      case 'correcao-monetaria':
+        return <FormCorrecaoMonetaria onCalcular={calcular} loading={loading} />;
+      default:
+        return (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div style={{ fontSize: '3em', marginBottom: '20px' }}>
+              {calculadorasFinanceiras.find(c => c.id === calculadoraAtiva)?.icone}
+            </div>
+            <h3 style={{ color: '#495057', marginBottom: '15px' }}>
+              {calculadorasFinanceiras.find(c => c.id === calculadoraAtiva)?.nome}
+            </h3>
+            <p style={{ color: '#6c757d', marginBottom: '25px' }}>
+              Formulário específico em desenvolvimento
+            </p>
+          </div>
+        );
     }
   };
 
@@ -74,8 +105,7 @@ const Financeiro = () => {
             key={calc.id}
             onClick={() => {
               setCalculadoraAtiva(calc.id);
-              setResultados(null);
-              setErro(null);
+              resetarCalculadora();
             }}
             style={{
               padding: '20px',
@@ -118,35 +148,8 @@ const Financeiro = () => {
           </h2>
         </div>
 
-        <div style={{ padding: '30px', textAlign: 'center' }}>
-          <div style={{ fontSize: '3em', marginBottom: '20px' }}>
-            {calculadoraAtual?.icone}
-          </div>
-          <h3 style={{ color: '#495057', marginBottom: '15px' }}>
-            {calculadoraAtual?.nome}
-          </h3>
-          <p style={{ color: '#6c757d', marginBottom: '25px' }}>
-            Formulário específico em desenvolvimento
-          </p>
-          <button
-            onClick={() => calcular({
-              teste: true,
-              calculadora: calculadoraAtiva
-            })}
-            disabled={loading}
-            style={{
-              padding: '12px 24px',
-              border: 'none',
-              background: loading ? '#6c757d' : '#ffc107',
-              color: 'white',
-              borderRadius: '6px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontSize: '1em',
-              fontWeight: 'bold'
-            }}
-          >
-            {loading ? '⏳ Calculando...' : '🧪 Teste com Dados Mock'}
-          </button>
+        <div style={{ padding: '30px' }}>
+          {renderFormulario()}
         </div>
       </div>
 
@@ -166,23 +169,27 @@ const Financeiro = () => {
 
       {/* Resultados */}
       {resultados && !loading && (
-        <div style={{
-          background: 'white',
-          padding: '30px',
-          borderRadius: '12px',
-          border: '1px solid #dee2e6',
-          marginTop: '20px'
-        }}>
-          <h3>�� Resultado do Cálculo</h3>
-          <pre style={{ 
-            background: '#f8f9fa',
-            padding: '20px',
-            borderRadius: '8px',
-            overflow: 'auto',
-            fontSize: '0.9em'
-          }}>
-            {JSON.stringify(resultados, null, 2)}
-          </pre>
+        <div style={{ marginTop: '30px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <button
+              onClick={resetarCalculadora}
+              style={{
+                padding: '10px 20px',
+                border: '1px solid #6c757d',
+                background: 'transparent',
+                color: '#6c757d',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              🔄 Nova Consulta
+            </button>
+          </div>
+
+          <ResultadosFinanceiros 
+            tipo={calculadoraAtiva}
+            resultados={resultados}
+          />
         </div>
       )}
     </div>

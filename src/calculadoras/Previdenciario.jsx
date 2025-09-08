@@ -1,11 +1,13 @@
-// src/calculadoras/Previdenciario.jsx
 import React, { useState } from 'react';
 import WizardPrevidenciario from '../components/Calculadoras/WizardPrevidenciario';
 import RegrasComparator from '../components/Calculadoras/RegrasComparator';
 import ResultadosDetalhados from '../components/Calculadoras/ResultadosDetalhados';
+import ResultadosPrevidenciarios from '../components/Calculadoras/ResultadosPrevidenciarios';
 import api from '../services/api';
 
 const Previdenciario = () => {
+  console.log('🚀 COMPONENTE PREVIDENCIARIO CARREGADO!');
+  
   const [calculadoraAtiva, setCalculadoraAtiva] = useState('regra-transicao-ec103');
   const [resultados, setResultados] = useState(null);
   const [dadosEntrada, setDadosEntrada] = useState(null);
@@ -70,6 +72,80 @@ const Previdenciario = () => {
     setErro(null);
   };
 
+  const renderFormulario = () => {
+    console.log('�� RENDER FORMULARIO EXECUTADO! Calculadora:', calculadoraAtiva);
+    
+    switch (calculadoraAtiva) {
+      case 'regra-transicao-ec103':
+        console.log('✅ Renderizando WizardPrevidenciario');
+        return <WizardPrevidenciario onCalcular={calcular} loading={loading} />;
+      
+      case 'tempo-especial':
+        console.log('🎯 TEMPO ESPECIAL SELECIONADO!');
+        return (
+          <div style={{
+            padding: '30px',
+            background: 'yellow',
+            color: 'black',
+            borderRadius: '10px',
+            textAlign: 'center',
+            fontSize: '20px',
+            fontWeight: 'bold'
+          }}>
+            🎉 SUCESSO! FormTempoEspecial deveria aparecer aqui!
+          </div>
+        );
+      
+      case 'periodo-graca':
+        console.log('📅 PERIODO GRACA SELECIONADO!');
+        return (
+          <div style={{
+            padding: '30px',
+            background: 'green',
+            color: 'white',
+            borderRadius: '10px',
+            textAlign: 'center',
+            fontSize: '20px',
+            fontWeight: 'bold'
+          }}>
+            🎉 SUCESSO! FormPeriodoGraca deveria aparecer aqui!
+          </div>
+        );
+      
+      case 'revisao-vida-toda':
+        console.log('🔄 REVISAO VIDA TODA SELECIONADO!');
+        return (
+          <div style={{
+            padding: '30px',
+            background: 'blue',
+            color: 'white',
+            borderRadius: '10px',
+            textAlign: 'center',
+            fontSize: '20px',
+            fontWeight: 'bold'
+          }}>
+            🎉 SUCESSO! FormRevisaoVidaToda deveria aparecer aqui!
+          </div>
+        );
+      
+      default:
+        console.log('❌ CAINDO NO DEFAULT para:', calculadoraAtiva);
+        return (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div style={{ fontSize: '3em', marginBottom: '20px' }}>
+              {calculadorasPrevidenciarias.find(c => c.id === calculadoraAtiva)?.icone}
+            </div>
+            <h3 style={{ color: '#495057', marginBottom: '15px' }}>
+              {calculadorasPrevidenciarias.find(c => c.id === calculadoraAtiva)?.nome}
+            </h3>
+            <p style={{ color: '#6c757d', marginBottom: '25px' }}>
+              Formulário específico em desenvolvimento
+            </p>
+          </div>
+        );
+    }
+  };
+
   const calculadoraAtual = calculadorasPrevidenciarias.find(c => c.id === calculadoraAtiva);
 
   return (
@@ -102,6 +178,7 @@ const Previdenciario = () => {
           <div
             key={calc.id}
             onClick={() => {
+              console.log('🖱️ CLICOU EM:', calc.id);
               setCalculadoraAtiva(calc.id);
               resetarCalculadora();
             }}
@@ -147,43 +224,7 @@ const Previdenciario = () => {
         </div>
 
         <div style={{ padding: '30px' }}>
-          {calculadoraAtiva === 'regra-transicao-ec103' ? (
-            <WizardPrevidenciario 
-              onCalcular={calcular}
-              loading={loading}
-            />
-          ) : (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <div style={{ fontSize: '3em', marginBottom: '20px' }}>
-                {calculadoraAtual?.icone}
-              </div>
-              <h3 style={{ color: '#495057', marginBottom: '15px' }}>
-                {calculadoraAtual?.nome}
-              </h3>
-              <p style={{ color: '#6c757d', marginBottom: '25px' }}>
-                Formulário específico em desenvolvimento
-              </p>
-              <button
-                onClick={() => calcular({
-                  teste: true,
-                  calculadora: calculadoraAtiva
-                })}
-                disabled={loading}
-                style={{
-                  padding: '12px 24px',
-                  border: 'none',
-                  background: loading ? '#6c757d' : '#667eea',
-                  color: 'white',
-                  borderRadius: '6px',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  fontSize: '1em',
-                  fontWeight: 'bold'
-                }}
-              >
-                {loading ? '⏳ Calculando...' : '🧪 Teste com Dados Mock'}
-              </button>
-            </div>
-          )}
+          {renderFormulario()}
         </div>
       </div>
 
@@ -216,7 +257,7 @@ const Previdenciario = () => {
                 cursor: 'pointer'
               }}
             >
-              �� Nova Consulta
+              🔄 Nova Consulta
             </button>
           </div>
 
@@ -229,23 +270,10 @@ const Previdenciario = () => {
               />
             </>
           ) : (
-            <div style={{
-              background: 'white',
-              padding: '30px',
-              borderRadius: '12px',
-              border: '1px solid #dee2e6'
-            }}>
-              <h3>📊 Resultado do Cálculo</h3>
-              <pre style={{ 
-                background: '#f8f9fa',
-                padding: '20px',
-                borderRadius: '8px',
-                overflow: 'auto',
-                fontSize: '0.9em'
-              }}>
-                {JSON.stringify(resultados, null, 2)}
-              </pre>
-            </div>
+            <ResultadosPrevidenciarios 
+              tipo={calculadoraAtiva}
+              resultados={resultados}
+            />
           )}
         </div>
       )}

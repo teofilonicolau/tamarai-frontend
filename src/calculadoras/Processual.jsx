@@ -1,5 +1,9 @@
 // src/calculadoras/Processual.jsx
 import React, { useState } from 'react';
+import FormPensaoAlimenticia from '../components/Calculadoras/FormPensaoAlimenticia';
+import FormLiquidacaoSentenca from '../components/Calculadoras/FormLiquidacaoSentenca';
+import FormValorCausa from '../components/Calculadoras/FormValorCausa';
+import ResultadosProcessuais from '../components/Calculadoras/ResultadosProcessuais';
 import api from '../services/api';
 
 const Processual = () => {
@@ -39,12 +43,42 @@ const Processual = () => {
     try {
       const calculadoraConfig = calculadorasProcessuais.find(c => c.id === calculadoraAtiva);
       const response = await api.post(calculadoraConfig.endpoint, dados);
-      setResultados(response.data.resultado || response.data);
+      setResultados(response.data.calculo || response.data);
     } catch (error) {
       console.error('Erro no cálculo:', error);
       setErro('Erro ao calcular. Verifique os dados e tente novamente.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const resetarCalculadora = () => {
+    setResultados(null);
+    setErro(null);
+  };
+
+  const renderFormulario = () => {
+    switch (calculadoraAtiva) {
+      case 'valor-causa':
+        return <FormValorCausa onCalcular={calcular} loading={loading} />;
+      case 'liquidacao-sentenca':
+        return <FormLiquidacaoSentenca onCalcular={calcular} loading={loading} />;
+      case 'pensao-alimenticia':
+        return <FormPensaoAlimenticia onCalcular={calcular} loading={loading} />;
+      default:
+        return (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div style={{ fontSize: '3em', marginBottom: '20px' }}>
+              {calculadorasProcessuais.find(c => c.id === calculadoraAtiva)?.icone}
+            </div>
+            <h3 style={{ color: '#495057', marginBottom: '15px' }}>
+              {calculadorasProcessuais.find(c => c.id === calculadoraAtiva)?.nome}
+            </h3>
+            <p style={{ color: '#6c757d', marginBottom: '25px' }}>
+              Formulário específico em desenvolvimento
+            </p>
+          </div>
+        );
     }
   };
 
@@ -81,8 +115,7 @@ const Processual = () => {
             key={calc.id}
             onClick={() => {
               setCalculadoraAtiva(calc.id);
-              setResultados(null);
-              setErro(null);
+              resetarCalculadora();
             }}
             style={{
               padding: '20px',
@@ -125,35 +158,8 @@ const Processual = () => {
           </h2>
         </div>
 
-        <div style={{ padding: '30px', textAlign: 'center' }}>
-          <div style={{ fontSize: '3em', marginBottom: '20px' }}>
-            {calculadoraAtual?.icone}
-          </div>
-          <h3 style={{ color: '#495057', marginBottom: '15px' }}>
-            {calculadoraAtual?.nome}
-          </h3>
-          <p style={{ color: '#6c757d', marginBottom: '25px' }}>
-            Formulário específico em desenvolvimento
-          </p>
-          <button
-            onClick={() => calcular({
-              teste: true,
-              calculadora: calculadoraAtiva
-            })}
-            disabled={loading}
-            style={{
-              padding: '12px 24px',
-              border: 'none',
-              background: loading ? '#6c757d' : '#17a2b8',
-              color: 'white',
-              borderRadius: '6px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontSize: '1em',
-              fontWeight: 'bold'
-            }}
-          >
-            {loading ? '⏳ Calculando...' : '🧪 Teste com Dados Mock'}
-          </button>
+        <div style={{ padding: '30px' }}>
+          {renderFormulario()}
         </div>
       </div>
 
@@ -173,23 +179,27 @@ const Processual = () => {
 
       {/* Resultados */}
       {resultados && !loading && (
-        <div style={{
-          background: 'white',
-          padding: '30px',
-          borderRadius: '12px',
-          border: '1px solid #dee2e6',
-          marginTop: '20px'
-        }}>
-          <h3>📊 Resultado do Cálculo</h3>
-          <pre style={{ 
-            background: '#f8f9fa',
-            padding: '20px',
-            borderRadius: '8px',
-            overflow: 'auto',
-            fontSize: '0.9em'
-          }}>
-            {JSON.stringify(resultados, null, 2)}
-          </pre>
+        <div style={{ marginTop: '30px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <button
+              onClick={resetarCalculadora}
+              style={{
+                padding: '10px 20px',
+                border: '1px solid #6c757d',
+                background: 'transparent',
+                color: '#6c757d',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              🔄 Nova Consulta
+            </button>
+          </div>
+
+          <ResultadosProcessuais 
+            tipo={calculadoraAtiva}
+            resultados={resultados}
+          />
         </div>
       )}
     </div>
