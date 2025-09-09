@@ -1,6 +1,6 @@
-// src/pages/Calculadoras.jsx - VERSÃO CORRIGIDA
+// src/pages/Calculadoras.jsx
 import React, { useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import RegrasComparator from '../components/Calculadoras/RegrasComparator';
 import WizardPrevidenciario from '../components/Calculadoras/WizardPrevidenciario';
 import ResultadosDetalhados from '../components/Calculadoras/ResultadosDetalhados';
@@ -26,7 +26,6 @@ import api from '../services/api';
 
 const Calculadoras = () => {
   const location = useLocation();
-  const params = useParams();
   
   // 🎯 DETERMINAR CATEGORIA INICIAL BASEADA NA URL
   const determinarCategoriaInicial = () => {
@@ -148,7 +147,7 @@ const Calculadoras = () => {
           id: 'pensao-alimenticia',
           nome: 'Pensão Alimentícia',
           descricao: 'Cálculo de pensão alimentícia',
-          icone: '👨‍👩‍👧‍👦',
+          icone: '👨‍��‍👧‍👦',
           endpoint: '/pensao-alimenticia',
           componente: 'form',
           implementado: true
@@ -272,7 +271,7 @@ const Calculadoras = () => {
           {calculadoraConfig.descricao}
         </p>
         <p style={{ color: '#856404', marginBottom: '25px' }}>
-          �� Formulário específico em desenvolvimento
+          🚧 Formulário específico em desenvolvimento
         </p>
         <button
           onClick={() => calcular({
@@ -557,7 +556,7 @@ const Calculadoras = () => {
                 cursor: 'pointer'
               }}
             >
-              🔄 Nova Consulta
+              �� Nova Consulta
             </button>
           </div>
 
