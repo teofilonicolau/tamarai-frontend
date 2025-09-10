@@ -10,9 +10,9 @@
   --bg-primary: #F9FAFB;
   --bg-secondary: #FFFFFF;
   --bg-tertiary: #F3F4F6;
-  --text-primary: #1D4ED8; /* AZUL PARA CONTEÚDO */
-  --text-secondary: #1D4ED8; /* AZUL PARA TEXTOS SECUNDÁRIOS */
-  --text-muted: #6B7280;
+  --text-primary: #1F2937; /* CINZA ESCURO PARA CONTEÚDO */
+  --text-secondary: #6B7280; /* CINZA MÉDIO PARA TEXTOS SECUNDÁRIOS */
+  --text-muted: #9CA3AF;
   --text-header-footer: #FFFFFF; /* BRANCO PARA HEADER/FOOTER */
   --accent: #1D4ED8;
   --accent-hover: #1E40AF;
@@ -38,13 +38,13 @@
   --bg-primary: #0D1117;
   --bg-secondary: #1E1E1E;
   --bg-tertiary: #262626;
-  --text-primary: #EDEDED;
-  --text-secondary: #9CA3AF;
-  --text-muted: #6B7280;
+  --text-primary: #FFFFFF; /* BRANCO PARA TEXTO PRINCIPAL */
+  --text-secondary: #D1D5DB; /* CINZA CLARO PARA SECUNDÁRIO */
+  --text-muted: #9CA3AF;
   --text-header-footer: #FFFFFF;
   --accent: #3B82F6;
   --accent-hover: #2563EB;
-  --icon-color: #B0B0B0; /* CINZA CLARO PARA ÍCONES */
+  --icon-color: #D1D5DB; /* CINZA CLARO PARA ÍCONES */
   --success: #10B981;
   --success-bg: #064E3B;
   --warning: #FBBF24;
@@ -55,12 +55,12 @@
   --border-light: #4B5563;
   --shadow: rgba(0, 0, 0, 0.3);
   --shadow-lg: rgba(0, 0, 0, 0.5);
-  --sidebar-bg: #2F2F2F; /* CINZA ESCURO PARA SIDEBAR */
+  --sidebar-bg: #2F2F2F;
   --sidebar-text: #FFFFFF;
-  --sidebar-hover: #757575; /* CINZA CLARO PARA HOVER */
-  --sidebar-active: #4A4A4A; /* CINZA MÉDIO PARA ATIVO */
-  --header-bg: #4A4A4A; /* CINZA PARA HEADER */
-  --footer-bg: #2F2F2F; /* CINZA ESCURO PARA FOOTER */
+  --sidebar-hover: #757575;
+  --sidebar-active: #4A4A4A;
+  --header-bg: #4A4A4A;
+  --footer-bg: #2F2F2F;
 }
 
 /* ========================================
@@ -88,7 +88,78 @@ body {
 }
 
 /* ========================================
-   🎨 COMPONENTES REUTILIZÁVEIS CORRIGIDOS
+   🎯 CORREÇÃO DEFINITIVA DOS FORMULÁRIOS
+======================================== */
+
+/* MODO CLARO - TEXTO PRETO */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+input[type="password"],
+input[type="radio"],
+textarea,
+select {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* PLACEHOLDERS VISÍVEIS */
+input::placeholder,
+textarea::placeholder {
+  color: #6B7280 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #6B7280 !important;
+}
+
+/* MODO ESCURO - TEXTO BRANCO */
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="tel"],
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] input[type="radio"],
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  color: #ffffff !important;
+  background-color: #374151 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #9CA3AF !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #9CA3AF !important;
+}
+
+/* FOCUS STATES */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid #1D4ED8 !important;
+  outline-offset: 2px !important;
+  border-color: #1D4ED8 !important;
+}
+
+/* LABELS E TEXTOS */
+label {
+  color: var(--text-primary) !important;
+  opacity: 1 !important;
+}
+
+/* BOTÕES DE RADIO */
+input[type="radio"] {
+  accent-color: #1D4ED8 !important;
+}
+
+/* ========================================
+   🎨 COMPONENTES REUTILIZÁVEIS
 ======================================== */
 
 .theme-card {
@@ -146,60 +217,6 @@ body {
   transform: none;
 }
 
-.theme-input {
-  background: var(--bg-secondary);
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 16px;
-  color: var(--text-primary);
-  font-family: inherit;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-.theme-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.theme-textarea {
-  background: var(--bg-secondary);
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 16px;
-  color: var(--text-primary);
-  font-family: inherit;
-  transition: all 0.3s ease;
-  width: 100%;
-  resize: vertical;
-  min-height: 120px;
-}
-
-.theme-textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.theme-select {
-  background: var(--bg-secondary);
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 16px;
-  color: var(--text-primary);
-  font-family: inherit;
-  transition: all 0.3s ease;
-  width: 100%;
-  cursor: pointer;
-}
-
-.theme-select:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
 /* ========================================
    🎯 SIDEBAR ESPECÍFICA
 ======================================== */
@@ -247,24 +264,6 @@ body {
 
 [data-theme="dark"] .footer-dark {
   background: var(--footer-bg) !important;
-}
-
-/* ========================================
-   🎯 ÍCONES DE RECURSOS AVANÇADOS
-======================================== */
-
-.resource-icon {
-  color: var(--icon-color);
-  font-size: 2rem;
-  transition: color 0.3s ease;
-}
-
-.resource-icon.jurisprudencia::before {
-  content: "📚";
-}
-
-.resource-icon.calculadoras::before {
-  content: "🧮";
 }
 
 /* ========================================
@@ -317,25 +316,12 @@ body {
   }
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
 .animate-fadeInUp {
   animation: fadeInUp 0.6s ease-out forwards;
 }
 
 .animate-slideInRight {
   animation: slideInRight 0.5s ease-out forwards;
-}
-
-.animate-pulse {
-  animation: pulse 2s infinite;
 }
 
 /* ========================================
@@ -401,69 +387,6 @@ body {
   }
 }
 
-@media (max-width: 480px) {
-  html {
-    font-size: 13px;
-  }
-  
-  .theme-card {
-    border-radius: 6px;
-    margin: 4px;
-  }
-}
-
-/* ========================================
-   🎨 GRADIENTES PERSONALIZADOS
-======================================== */
-
-.gradient-brand {
-  background: linear-gradient(135deg, var(--accent) 0%, #8B5CF6 100%);
-}
-
-.gradient-success {
-  background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
-}
-
-.gradient-warning {
-  background: linear-gradient(135deg, var(--warning) 0%, #D97706 100%);
-}
-
-.gradient-error {
-  background: linear-gradient(135deg, var(--error) 0%, #DC2626 100%);
-}
-
-/* ========================================
-   🔧 UTILITÁRIOS ESPECIAIS
-======================================== */
-
-.text-gradient {
-  background: linear-gradient(135deg, var(--accent), #8B5CF6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.glass-effect {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-[data-theme="dark"] .glass-effect {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.shadow-elegant {
-  box-shadow: 0 8px 32px var(--shadow);
-}
-
-.border-gradient {
-  border: 2px solid transparent;
-  background: linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box,
-              linear-gradient(135deg, var(--accent), #8B5CF6) border-box;
-}
-
 /* ========================================
    🎯 CLASSES DE TRANSIÇÃO
 ======================================== */
@@ -481,115 +404,4 @@ body {
 
 .transition-all {
   transition: all 0.3s ease;
-}
-
-/* ========================================
-   🚀 PERFORMANCE OTIMIZADA
-======================================== */
-
-.will-change-transform {
-  will-change: transform;
-}
-
-.will-change-auto {
-  will-change: auto;
-}
-
-.gpu-accelerated {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-}
-
-/* ========================================
-   🎯 CORREÇÃO DE CORES DOS FORMULÁRIOS
-======================================== */
-
-/* Inputs dos formulários das calculadoras */
-input[type="text"],
-input[type="number"],
-input[type="email"],
-input[type="tel"],
-input[type="date"],
-input[type="password"],
-textarea,
-select {
-  color: #000000 !important; /* PRETO PARA TEXTO */
-  background-color: #ffffff !important; /* FUNDO BRANCO */
-}
-
-/* Placeholders visíveis */
-input::placeholder,
-textarea::placeholder {
-  color: #6c757d !important; /* CINZA PARA PLACEHOLDER */
-  opacity: 1 !important;
-}
-
-/* Modo escuro - inputs */
-[data-theme="dark"] input[type="text"],
-[data-theme="dark"] input[type="number"],
-[data-theme="dark"] input[type="email"],
-[data-theme="dark"] input[type="tel"],
-[data-theme="dark"] input[type="date"],
-[data-theme="dark"] input[type="password"],
-[data-theme="dark"] textarea,
-[data-theme="dark"] select {
-  color: #ffffff !important; /* BRANCO PARA TEXTO NO ESCURO */
-  background-color: #2d3748 !important; /* FUNDO ESCURO */
-}
-
-[data-theme="dark"] input::placeholder,
-[data-theme="dark"] textarea::placeholder {
-  color: #a0aec0 !important; /* CINZA CLARO PARA PLACEHOLDER NO ESCURO */
-}
-
-/* Inputs focados */
-input:focus,
-textarea:focus,
-select:focus {
-  outline: 2px solid #007bff !important;
-  outline-offset: 2px !important;
-}
-
-/* Garantir legibilidade em todos os formulários */
-.theme-input,
-.theme-textarea,
-.theme-select {
-  color: #000000 !important;
-  background-color: #ffffff !important;
-}
-
-[data-theme="dark"] .theme-input,
-[data-theme="dark"] .theme-textarea,
-[data-theme="dark"] .theme-select {
-  color: #ffffff !important;
-  background-color: #2d3748 !important;
-}
-
-/* ========================================
-   🎯 CORREÇÃO FORÇA BRUTA PARA INPUTS
-======================================== */
-
-/* Força cor preta em TODOS os inputs */
-input, textarea, select {
-  color: #000000 !important;
-  background-color: #ffffff !important;
-}
-
-/* Modo escuro */
-[data-theme="dark"] input,
-[data-theme="dark"] textarea,
-[data-theme="dark"] select {
-  color: #ffffff !important;
-  background-color: #2d3748 !important;
-}
-
-/* Placeholders */
-::placeholder {
-  color: #6c757d !important;
-  opacity: 1 !important;
-}
-
-[data-theme="dark"] ::placeholder {
-  color: #a0aec0 !important;
 }
