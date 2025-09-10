@@ -20,7 +20,7 @@ const Previdenciario = () => {
       nome: 'Regras de Transição EC 103/2019',
       descricao: 'Análise completa das 4 regras de transição',
       icone: '📊',
-      endpoint: '/regra-transicao-ec103',
+      endpoint: '/api/v1/regra-transicao-ec103',  // ✅ CORRIGIDO
       componente: 'wizard'
     },
     {
@@ -28,7 +28,7 @@ const Previdenciario = () => {
       nome: 'Tempo Especial',
       descricao: 'Conversão de tempo especial em comum',
       icone: '⚡',
-      endpoint: '/tempo-especial',
+      endpoint: '/api/v1/tempo-especial',  // ✅ CORRIGIDO
       componente: 'form'
     },
     {
@@ -36,7 +36,7 @@ const Previdenciario = () => {
       nome: 'Período de Graça',
       descricao: 'Cálculo do período de graça previdenciário',
       icone: '📅',
-      endpoint: '/periodo-graca',
+      endpoint: '/api/v1/periodo-graca',  // ✅ CORRIGIDO
       componente: 'form'
     },
     {
@@ -44,7 +44,7 @@ const Previdenciario = () => {
       nome: 'Revisão da Vida Toda',
       descricao: 'Análise de viabilidade da revisão',
       icone: '🔄',
-      endpoint: '/revisao-vida-toda',
+      endpoint: '/api/v1/revisao-vida-toda',  // ✅ CORRIGIDO
       componente: 'form'
     }
   ];
@@ -73,7 +73,7 @@ const Previdenciario = () => {
   };
 
   const renderFormulario = () => {
-    console.log('�� RENDER FORMULARIO EXECUTADO! Calculadora:', calculadoraAtiva);
+    console.log('🎯 RENDER FORMULARIO EXECUTADO! Calculadora:', calculadoraAtiva);
     
     switch (calculadoraAtiva) {
       case 'regra-transicao-ec103':

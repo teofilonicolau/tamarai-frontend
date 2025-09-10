@@ -1,4 +1,5 @@
 // src/pages/Calculadoras.jsx
+// src/pages/Calculadoras.jsx
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import RegrasComparator from '../components/Calculadoras/RegrasComparator';
@@ -55,7 +56,7 @@ const Calculadoras = () => {
           nome: 'Regras de Transição EC 103/2019',
           descricao: 'Análise completa das 4 regras de transição',
           icone: '📊',
-          endpoint: '/regra-transicao-ec103',
+          endpoint: '/api/v1/regra-transicao-ec103',  // ✅ CORRIGIDO
           componente: 'wizard',
           implementado: true
         },
@@ -64,7 +65,7 @@ const Calculadoras = () => {
           nome: 'Tempo Especial',
           descricao: 'Conversão de tempo especial em comum',
           icone: '⚡',
-          endpoint: '/tempo-especial',
+          endpoint: '/api/v1/tempo-especial',  // ✅ CORRIGIDO
           componente: 'form',
           implementado: true
         },
@@ -73,7 +74,7 @@ const Calculadoras = () => {
           nome: 'Período de Graça',
           descricao: 'Cálculo do período de graça previdenciário',
           icone: '📅',
-          endpoint: '/periodo-graca',
+          endpoint: '/api/v1/periodo-graca',  // ✅ CORRIGIDO
           componente: 'form',
           implementado: true
         },
@@ -82,7 +83,7 @@ const Calculadoras = () => {
           nome: 'Revisão da Vida Toda',
           descricao: 'Análise de viabilidade da revisão',
           icone: '🔄',
-          endpoint: '/revisao-vida-toda',
+          endpoint: '/api/v1/revisao-vida-toda',  // ✅ CORRIGIDO
           componente: 'form',
           implementado: true
         }
@@ -97,7 +98,7 @@ const Calculadoras = () => {
           nome: 'Horas Extras',
           descricao: 'Cálculo de horas extras e reflexos',
           icone: '⏰',
-          endpoint: '/horas-extras',
+          endpoint: '/api/v1/horas-extras',  // ✅ CORRIGIDO
           componente: 'form',
           implementado: true
         },
@@ -106,7 +107,7 @@ const Calculadoras = () => {
           nome: 'Verbas Rescisórias',
           descricao: 'Cálculo completo da rescisão',
           icone: '💼',
-          endpoint: '/verbas-rescisorias',
+          endpoint: '/api/v1/verbas-rescisorias',  // ✅ CORRIGIDO
           componente: 'form',
           implementado: true
         },
@@ -115,7 +116,7 @@ const Calculadoras = () => {
           nome: 'Adicional Noturno',
           descricao: 'Cálculo do adicional noturno',
           icone: '🌙',
-          endpoint: '/adicional-noturno',
+          endpoint: '/api/v1/adicional-noturno',  // ✅ CORRIGIDO
           componente: 'form',
           implementado: true
         }
@@ -130,7 +131,7 @@ const Calculadoras = () => {
           nome: 'Valor da Causa',
           descricao: 'Cálculo do valor da causa processual',
           icone: '💰',
-          endpoint: '/valor-causa',
+          endpoint: '/api/v1/valor-causa',  // ✅ CORRIGIDO
           componente: 'form',
           implementado: true
         },
@@ -139,7 +140,7 @@ const Calculadoras = () => {
           nome: 'Liquidação de Sentença',
           descricao: 'Liquidação com juros e correção',
           icone: '📋',
-          endpoint: '/liquidacao-sentenca',
+          endpoint: '/api/v1/liquidacao-sentenca',  // ✅ CORRIGIDO
           componente: 'form',
           implementado: true
         },
@@ -147,8 +148,8 @@ const Calculadoras = () => {
           id: 'pensao-alimenticia',
           nome: 'Pensão Alimentícia',
           descricao: 'Cálculo de pensão alimentícia',
-          icone: '👨‍��‍👧‍👦',
-          endpoint: '/pensao-alimenticia',
+          icone: '👨‍👩‍👧‍👦',
+          endpoint: '/api/v1/pensao-alimenticia',  // ✅ CORRIGIDO
           componente: 'form',
           implementado: true
         }
@@ -163,7 +164,7 @@ const Calculadoras = () => {
           nome: 'Juros de Mora',
           descricao: 'Cálculo de juros moratórios',
           icone: '📈',
-          endpoint: '/juros-mora',
+          endpoint: '/api/v1/juros-mora',  // ✅ CORRIGIDO
           componente: 'form',
           implementado: true
         },
@@ -172,7 +173,7 @@ const Calculadoras = () => {
           nome: 'Correção Monetária',
           descricao: 'Atualização monetária por índices',
           icone: '📊',
-          endpoint: '/correcao-monetaria',
+          endpoint: '/api/v1/correcao-monetaria',  // ✅ CORRIGIDO
           componente: 'form',
           implementado: true
         }
@@ -556,7 +557,7 @@ const Calculadoras = () => {
                 cursor: 'pointer'
               }}
             >
-              �� Nova Consulta
+              🔄 Nova Consulta
             </button>
           </div>
 
