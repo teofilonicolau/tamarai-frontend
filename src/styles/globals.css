@@ -500,3 +500,68 @@ body {
   backface-visibility: hidden;
   perspective: 1000px;
 }
+
+/* ========================================
+   🎯 CORREÇÃO DE CORES DOS FORMULÁRIOS
+======================================== */
+
+/* Inputs dos formulários das calculadoras */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+input[type="password"],
+textarea,
+select {
+  color: #000000 !important; /* PRETO PARA TEXTO */
+  background-color: #ffffff !important; /* FUNDO BRANCO */
+}
+
+/* Placeholders visíveis */
+input::placeholder,
+textarea::placeholder {
+  color: #6c757d !important; /* CINZA PARA PLACEHOLDER */
+  opacity: 1 !important;
+}
+
+/* Modo escuro - inputs */
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="tel"],
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  color: #ffffff !important; /* BRANCO PARA TEXTO NO ESCURO */
+  background-color: #2d3748 !important; /* FUNDO ESCURO */
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #a0aec0 !important; /* CINZA CLARO PARA PLACEHOLDER NO ESCURO */
+}
+
+/* Inputs focados */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid #007bff !important;
+  outline-offset: 2px !important;
+}
+
+/* Garantir legibilidade em todos os formulários */
+.theme-input,
+.theme-textarea,
+.theme-select {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+[data-theme="dark"] .theme-input,
+[data-theme="dark"] .theme-textarea,
+[data-theme="dark"] .theme-select {
+  color: #ffffff !important;
+  background-color: #2d3748 !important;
+}

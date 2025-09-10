@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Configuração base da API
 const api = axios.create({
-  baseURL: 'http://localhost:8000',  // ← SEM /api/v1 aqui!
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -14,6 +14,8 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     console.log(`🚀 ${config.method?.toUpperCase()} ${config.url}`);
+    console.log('🌐 Ambiente:', import.meta.env.MODE);
+    console.log('🔗 API URL:', import.meta.env.VITE_API_URL);
     return config;
   },
   (error) => {
