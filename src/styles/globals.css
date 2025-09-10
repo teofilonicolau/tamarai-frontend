@@ -565,3 +565,31 @@ select:focus {
   color: #ffffff !important;
   background-color: #2d3748 !important;
 }
+
+/* ========================================
+   🎯 CORREÇÃO FORÇA BRUTA PARA INPUTS
+======================================== */
+
+/* Força cor preta em TODOS os inputs */
+input, textarea, select {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+/* Modo escuro */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  color: #ffffff !important;
+  background-color: #2d3748 !important;
+}
+
+/* Placeholders */
+::placeholder {
+  color: #6c757d !important;
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] ::placeholder {
+  color: #a0aec0 !important;
+}
