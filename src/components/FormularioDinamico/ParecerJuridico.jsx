@@ -1,7 +1,9 @@
+// src/components/FormularioDinamico/ParecerJuridico.jsx
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
+import { ENDPOINTS } from '../../config/endpoints';
 
 const ParecerJuridico = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -11,10 +13,10 @@ const ParecerJuridico = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      const response = await api.post('/parecer-juridico', data);
+      const response = await api.post(ENDPOINTS.ai.parecer, data);
       setParecer(response.data);
       toast.success('Parecer gerado com sucesso!');
-    } catch (error) {
+    } catch {
       toast.error('Erro ao gerar parecer');
     } finally {
       setLoading(false);
@@ -23,7 +25,7 @@ const ParecerJuridico = () => {
 
   const gerarPDF = async () => {
     try {
-      const response = await api.post('/parecer-juridico/pdf', 
+      const response = await api.post(`${ENDPOINTS.ai.parecer}/pdf`, 
         parecer.dados_utilizados, 
         { responseType: 'blob' }
       );
@@ -37,20 +39,20 @@ const ParecerJuridico = () => {
       link.remove();
       
       toast.success('PDF baixado com sucesso!');
-    } catch (error) {
+    } catch {
       toast.error('Erro ao gerar PDF');
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="theme-card p-6">
         
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             📋 Parecer Jurídico com IA
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             Gere pareceres jurídicos estruturados e fundamentados
           </p>
         </div>
@@ -58,12 +60,12 @@ const ParecerJuridico = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Título do Parecer *
             </label>
             <input
               {...register('titulo', { required: 'Título é obrigatório' })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Ex: Parecer sobre Aposentadoria Especial"
             />
             {errors.titulo && (
@@ -72,13 +74,13 @@ const ParecerJuridico = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Conteúdo/Questão a Analisar *
             </label>
             <textarea
               {...register('conteudo', { required: 'Conteúdo é obrigatório' })}
               rows={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Descreva a situação jurídica que precisa de parecer..."
             />
             {errors.conteudo && (
@@ -88,12 +90,12 @@ const ParecerJuridico = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Área do Direito
               </label>
               <select
                 {...register('area')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="geral">Geral</option>
                 <option value="previdenciario">Previdenciário</option>
@@ -112,52 +114,52 @@ const ParecerJuridico = () => {
                   defaultChecked={true}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   Incluir Jurisprudência
                 </span>
               </label>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Nome do Escritório
               </label>
               <input
                 {...register('firm_name')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 placeholder="Nome do escritório"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Nome do Advogado
               </label>
               <input
                 {...register('lawyer_name')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 placeholder="Nome do advogado"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Texto da Assinatura
               </label>
               <input
                 {...register('signature_text')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 placeholder="Ex: Dr. João Silva - OAB/SP 123456"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Persona da IA
               </label>
               <input
                 {...register('ai_persona')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 placeholder="Ex: Especialista em Direito Previdenciário com 15 anos de experiência"
               />
             </div>
@@ -167,7 +169,8 @@ const ParecerJuridico = () => {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50"
+              className="theme-button flex-1"
+              style={{ background: '#8B5CF6' }}
             >
               {loading ? 'Gerando...' : '📋 Gerar Parecer'}
             </button>
@@ -176,7 +179,8 @@ const ParecerJuridico = () => {
               <button
                 type="button"
                 onClick={gerarPDF}
-                className="bg-green-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-green-700"
+                className="theme-button"
+                style={{ background: '#10B981' }}
               >
                 📥 Baixar PDF
               </button>
@@ -186,12 +190,12 @@ const ParecerJuridico = () => {
         </form>
 
         {parecer && (
-          <div className="mt-8 border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="mt-8 border-t border-gray-200 dark:border-gray-600 pt-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               📋 Parecer Gerado
             </h3>
-            <div className="bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto">
-              <pre className="whitespace-pre-wrap text-sm text-gray-800">
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg max-h-96 overflow-y-auto">
+              <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200">
                 {parecer.parecer || JSON.stringify(parecer, null, 2)}
               </pre>
             </div>

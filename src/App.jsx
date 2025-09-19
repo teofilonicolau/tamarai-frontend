@@ -1,4 +1,4 @@
-// src/App.jsx
+// src/App.jsx - ADICIONAR IMPORTS E ROTAS
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -10,10 +10,13 @@ import AnaliseTexto from './components/FormularioDinamico/AnaliseTexto';
 import ParecerJuridico from './components/FormularioDinamico/ParecerJuridico';
 import PeticaoExecucao from './components/FormularioDinamico/PeticaoExecucao';
 import PeticaoMonitoria from './components/FormularioDinamico/PeticaoMonitoria';
+import FormularioConsumidor from './components/FormularioDinamico/FormularioConsumidor';
+import FormularioCivil from './components/FormularioDinamico/FormularioCivil';
+import FormularioTrabalhista from './components/FormularioDinamico/FormularioTrabalhista';
 import Calculadoras from './pages/Calculadoras';
 import Dashboard from './pages/Dashboard';
 
-// 🎯 COMPONENTE WRAPPER PARA PETIÇÕES INTELIGENTE
+// �� COMPONENTE WRAPPER PARA PETIÇÕES INTELIGENTE
 const PeticaoPage = () => {
   const { tipoPeticao } = useParams();
   
@@ -26,16 +29,31 @@ const PeticaoPage = () => {
   if (tipoPeticao === 'peticao-execucao') return <PeticaoExecucao />;
   if (tipoPeticao === 'peticao-monitoria') return <PeticaoMonitoria />;
   
+  // 🛒 CONSUMIDOR
+  if (tipoPeticao === 'peticao-vicio-produto' || tipoPeticao === 'peticao-cobranca-indevida') {
+    return <FormularioConsumidor tipoPeticao={tipoPeticao} />;
+  }
+  
+  // 📋 CIVIL
+  if (tipoPeticao === 'peticao-cobranca' || tipoPeticao === 'peticao-indenizacao') {
+    return <FormularioCivil tipoPeticao={tipoPeticao} />;
+  }
+  
+  // ⚖️ TRABALHISTA
+  if (tipoPeticao === 'peticao-vinculo' || tipoPeticao === 'quesitos-insalubridade') {
+    return <FormularioTrabalhista tipoPeticao={tipoPeticao} />;
+  }
+  
   // 🏛️ PADRÃO (PREVIDENCIÁRIO E OUTROS)
   return <FormularioPeticao tipoPeticao={tipoPeticao} />;
 };
 
-// �� COMPONENTE WRAPPER PARA CALCULADORAS
+// 🧮 COMPONENTE WRAPPER PARA CALCULADORAS
 const CalculadorasPage = () => {
   return <Calculadoras />;
 };
 
-// 🚀 COMPONENTE PRINCIPAL DA APLICAÇÃO
+// �� COMPONENTE PRINCIPAL DA APLICAÇÃO
 function App() {
   return (
     <Router>
@@ -137,7 +155,7 @@ function App() {
                 padding: '60px 20px',
                 color: 'var(--text-primary)'
               }}>
-                <h1 style={{ fontSize: '4em', margin: '0 0 20px 0' }}>🔍</h1>
+                <h1 style={{ fontSize: '4em', margin: '0 0 20px 0' }}>��</h1>
                 <h2 style={{ margin: '0 0 15px 0' }}>Página não encontrada</h2>
                 <p style={{ color: 'var(--text-secondary)' }}>
                   A página que você está procurando não existe.

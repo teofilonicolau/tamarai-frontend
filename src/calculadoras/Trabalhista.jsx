@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import FormHorasExtras from '../components/Calculadoras/FormHorasExtras';
 import FormVerbasRescisorias from '../components/Calculadoras/FormVerbasRescisorias';
 import FormAdicionalNoturno from '../components/Calculadoras/FormAdicionalNoturno';
-import ResultadosTrabalhistas from '../components/Calculadoras/ResultadosTrabalhistas'; // NOVO IMPORT
+import ResultadosTrabalhistas from '../components/Calculadoras/ResultadosTrabalhistas';
 import api from '../services/api';
+import { ENDPOINTS } from '../config/endpoints';
 
 const Trabalhista = () => {
   const [calculadoraAtiva, setCalculadoraAtiva] = useState('horas-extras');
@@ -18,21 +19,21 @@ const Trabalhista = () => {
       nome: 'Horas Extras',
       descricao: 'Cálculo de horas extras e reflexos',
       icone: '⏰',
-      endpoint: '/horas-extras'
+      endpoint: ENDPOINTS.calculadoras.trabalhista.horas_extras
     },
     {
       id: 'verbas-rescisorias',
       nome: 'Verbas Rescisórias',
       descricao: 'Cálculo completo da rescisão',
       icone: '💼',
-      endpoint: '/verbas-rescisorias'
+      endpoint: ENDPOINTS.calculadoras.trabalhista.verbas_rescisorias
     },
     {
       id: 'adicional-noturno',
       nome: 'Adicional Noturno',
       descricao: 'Cálculo do adicional noturno',
       icone: '🌙',
-      endpoint: '/adicional-noturno'
+      endpoint: ENDPOINTS.calculadoras.trabalhista.adicional_noturno
     }
   ];
 
@@ -44,8 +45,7 @@ const Trabalhista = () => {
       const calculadoraConfig = calculadorasTrabalhistas.find(c => c.id === calculadoraAtiva);
       const response = await api.post(calculadoraConfig.endpoint, dados);
       setResultados(response.data.calculo || response.data);
-    } catch (error) {
-      console.error('Erro no cálculo:', error);
+    } catch {
       setErro('Erro ao calcular. Verifique os dados e tente novamente.');
     } finally {
       setLoading(false);
@@ -67,16 +67,28 @@ const Trabalhista = () => {
         return <FormAdicionalNoturno onCalcular={calcular} loading={loading} />;
       default:
         return (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <div style={{ fontSize: '3em', marginBottom: '20px' }}>
+          <div className="text-center p-10">
+            <div className="text-5xl mb-4">
               {calculadorasTrabalhistas.find(c => c.id === calculadoraAtiva)?.icone}
             </div>
-            <h3 style={{ color: '#495057', marginBottom: '15px' }}>
+            <h3 className="text-gray-900 dark:text-white mb-3">
               {calculadorasTrabalhistas.find(c => c.id === calculadoraAtiva)?.nome}
             </h3>
-            <p style={{ color: '#6c757d', marginBottom: '25px' }}>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
               Formulário específico em desenvolvimento
             </p>
+            <button
+              onClick={() => calcular({
+                teste: true,
+                calculadora: calculadoraAtiva,
+                timestamp: new Date().toISOString()
+              })}
+              disabled={loading}
+              className="theme-button"
+              style={{ background: loading ? '#6c757d' : '#28a745' }}
+            >
+              {loading ? '⏳ Calculando...' : '🧪 Teste com Dados Mock'}
+            </button>
           </div>
         );
     }
@@ -85,31 +97,23 @@ const Trabalhista = () => {
   const calculadoraAtual = calculadorasTrabalhistas.find(c => c.id === calculadoraAtiva);
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+    <div className="max-w-6xl mx-auto p-5">
+      
       {/* Header */}
-      <div style={{ 
+      <div className="theme-card p-8 mb-8 text-center" style={{
         background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
-        color: 'white',
-        padding: '30px',
-        borderRadius: '12px',
-        marginBottom: '30px',
-        textAlign: 'center'
+        color: 'white'
       }}>
-        <h1 style={{ margin: '0 0 10px 0', fontSize: '2.2em' }}>
+        <h1 className="text-4xl font-bold mb-2">
           👷 Calculadoras Trabalhistas
         </h1>
-        <p style={{ margin: '0', opacity: '0.9' }}>
+        <p className="text-lg opacity-90">
           Ferramentas especializadas em Direito do Trabalho
         </p>
       </div>
 
       {/* Seletor de Calculadoras */}
-      <div style={{ 
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '15px',
-        marginBottom: '30px'
-      }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {calculadorasTrabalhistas.map(calc => (
           <div
             key={calc.id}
@@ -117,80 +121,51 @@ const Trabalhista = () => {
               setCalculadoraAtiva(calc.id);
               resetarCalculadora();
             }}
-            style={{
-              padding: '20px',
-              border: `2px solid ${calculadoraAtiva === calc.id ? '#28a745' : '#dee2e6'}`,
-              borderRadius: '10px',
-              cursor: 'pointer',
-              background: calculadoraAtiva === calc.id ? '#f8f9fa' : 'white',
-              transition: 'all 0.3s ease',
-              textAlign: 'center'
-            }}
+            className={`theme-card p-6 cursor-pointer transition-all ${
+              calculadoraAtiva === calc.id ? 'ring-2 ring-green-500' : ''
+            }`}
           >
-            <div style={{ fontSize: '2em', marginBottom: '10px' }}>
-              {calc.icone}
+            <div className="text-center">
+              <div className="text-4xl mb-3">{calc.icone}</div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                {calc.nome}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                {calc.descricao}
+              </p>
             </div>
-            <h3 style={{ margin: '0 0 8px 0', color: '#495057' }}>
-              {calc.nome}
-            </h3>
-            <p style={{ margin: '0', color: '#6c757d', fontSize: '0.9em' }}>
-              {calc.descricao}
-            </p>
           </div>
         ))}
       </div>
 
       {/* Área de Cálculo */}
-      <div style={{
-        background: 'white',
-        borderRadius: '12px',
-        border: '1px solid #dee2e6',
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          background: '#28a745',
-          color: 'white',
-          padding: '20px',
-          textAlign: 'center'
-        }}>
-          <h2 style={{ margin: '0' }}>
+      <div className="theme-card overflow-hidden">
+        <div className="bg-green-600 text-white p-5 text-center">
+          <h2 className="text-xl font-semibold">
             {calculadoraAtual?.icone} {calculadoraAtual?.nome}
           </h2>
         </div>
 
-        <div style={{ padding: '30px' }}>
+        <div className="p-8">
           {renderFormulario()}
         </div>
       </div>
 
       {/* Erro */}
       {erro && (
-        <div style={{
-          background: '#f8d7da',
-          color: '#721c24',
-          padding: '15px',
-          borderRadius: '8px',
-          marginTop: '20px',
-          border: '1px solid #f5c6cb'
-        }}>
+        <div className="error-state mt-5">
           ❌ <strong>Erro:</strong> {erro}
         </div>
       )}
 
       {/* Resultados */}
       {resultados && !loading && (
-        <div style={{ marginTop: '30px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <div className="mt-8">
+          <div className="text-center mb-5">
             <button
               onClick={resetarCalculadora}
-              style={{
-                padding: '10px 20px',
-                border: '1px solid #6c757d',
-                background: 'transparent',
-                color: '#6c757d',
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
+              className="theme-button"
+              style={{ background: '#6c757d' }}
             >
               🔄 Nova Consulta
             </button>

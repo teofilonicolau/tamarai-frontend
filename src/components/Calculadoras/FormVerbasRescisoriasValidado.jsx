@@ -12,7 +12,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
     ],
     salario: [
       { required: true, message: 'Salário é obrigatório' },
-      { validator: (value) => validators.valorMonetario(value, 1320, 50000), message: 'Salário deve estar entre R\$ 1.320,00 e R\$ 50.000,00' }
+      { validator: (value) => validators.valorMonetario(value, 1320, 50000), message: 'Salário deve estar entre R$ 1.320,00 e R$ 50.000,00' }
     ],
     data_admissao: [
       { required: true, message: 'Data de admissão é obrigatória' },
@@ -185,7 +185,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
             error={errors.salario}
             touched={touched.salario}
             mask="money"
-            placeholder="R\$ 0,00"
+            placeholder="R$ 0,00"
             icon="💰"
             required
             helpText="Último salário recebido pelo empregado"
