@@ -4,7 +4,9 @@ export const ENDPOINTS = {
   ai: {
     consulta: '/api/v1/consulta',
     analise: '/api/v1/analise',
-    parecer: '/api/v1/parecer-juridico'
+    parecer: '/api/v1/parecer-juridico',
+    // 👇 ALIAS para compatibilidade com novos componentes
+    parecer_juridico: '/api/v1/parecer-juridico'
   },
 
   // 🏛️ PETIÇÕES PREVIDENCIÁRIAS
@@ -92,7 +94,7 @@ export const ENDPOINTS = {
   }
 };
 
-// 🎯 HELPER FUNCTIONS PARA FACILITAR O USO
+// 🎯 HELPER FUNCTIONS (MANTENHA - SÃO ÚTEIS!)
 export const getEndpoint = (categoria, subcategoria, acao = null) => {
   try {
     if (acao) {
@@ -105,7 +107,6 @@ export const getEndpoint = (categoria, subcategoria, acao = null) => {
   }
 };
 
-// 🔍 BUSCAR ENDPOINT POR NOME
 export const findEndpoint = (searchTerm) => {
   const results = [];
   
@@ -130,7 +131,6 @@ export const findEndpoint = (searchTerm) => {
   return results;
 };
 
-// 📋 LISTAR TODOS OS ENDPOINTS
 export const getAllEndpoints = () => {
   const allEndpoints = [];
   

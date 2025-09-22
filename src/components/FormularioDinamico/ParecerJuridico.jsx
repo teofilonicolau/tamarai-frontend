@@ -2,30 +2,39 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import api from '../../services/api';
 import { ENDPOINTS } from '../../config/endpoints';
+import { http } from '../../services/api';
+import { extractPayload } from '../../utils/payload';
 
 const ParecerJuridico = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(false);
   const [parecer, setParecer] = useState(null);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (formValues) => {
+    const payload = extractPayload(formValues);
     setLoading(true);
+    setParecer(null);
     try {
-      const response = await api.post(ENDPOINTS.ai.parecer, data);
-      setParecer(response.data);
-      toast.success('Parecer gerado com sucesso!');
-    } catch {
-      toast.error('Erro ao gerar parecer');
+      const data = await http.post(ENDPOINTS.ia.parecer_juridico, payload);
+      setParecer(data);
+      toast.success('Parecer gerado com sucesso.');
+    } catch (err) {
+      toast.error(err?.message || 'Erro ao gerar parecer');
     } finally {
       setLoading(false);
     }
   };
 
   const gerarPDF = async () => {
+    if (!parecer?.dados_utilizados) {
+      toast.error('Nenhum parecer carregado para gerar PDF');
+      return;
+    }
+
     try {
-      const response = await api.post(`${ENDPOINTS.ai.parecer}/pdf`, 
+      const response = await http.post(
+        `${ENDPOINTS.ia.parecer_juridico}/pdf`, 
         parecer.dados_utilizados, 
         { responseType: 'blob' }
       );
@@ -39,8 +48,8 @@ const ParecerJuridico = () => {
       link.remove();
       
       toast.success('PDF baixado com sucesso!');
-    } catch {
-      toast.error('Erro ao gerar PDF');
+    } catch (err) {
+      toast.error(err?.message || 'Erro ao gerar PDF');
     }
   };
 

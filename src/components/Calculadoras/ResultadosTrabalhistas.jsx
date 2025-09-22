@@ -1,6 +1,7 @@
 // src/components/Calculadoras/ResultadosTrabalhistas.jsx
 import React from 'react';
 
+// Componente para exibir resultados de cálculos trabalhistas
 const ResultadosTrabalhistas = ({ tipo, resultados, dadosEntrada }) => {
   // Função para formatar valores monetários
   const formatarMoeda = (valor) => {
@@ -13,7 +14,36 @@ const ResultadosTrabalhistas = ({ tipo, resultados, dadosEntrada }) => {
     return `${tempo.anos || 0} anos, ${tempo.meses || 0} meses e ${tempo.dias || 0} dias`;
   };
 
-  const renderHorasExtras = () => (
+  // Componente reutilizável para seção de dados de entrada
+  const DadosEntradaSection = () => (
+    dadosEntrada && (
+      <div style={{ 
+        background: '#f8f9fa', 
+        padding: '15px', 
+        borderRadius: '8px', 
+        marginTop: '20px',
+        border: '1px solid #dee2e6'
+      }}>
+        <h4 style={{ margin: '0 0 10px 0', color: '#495057' }}>📋 Dados Utilizados no Cálculo</h4>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.9em' }}>
+          <p><strong>CPF:</strong> {dadosEntrada.cpf || 'Não informado'}</p>
+          <p><strong>Salário:</strong> {formatarMoeda(dadosEntrada.salario)}</p>
+          {dadosEntrada.data_admissao && (
+            <p><strong>Data Admissão:</strong> {dadosEntrada.data_admissao}</p>
+          )}
+          {dadosEntrada.data_rescisao && (
+            <p><strong>Data Rescisão:</strong> {dadosEntrada.data_rescisao}</p>
+          )}
+          {dadosEntrada.tipo_rescisao && (
+            <p><strong>Tipo Rescisão:</strong> {dadosEntrada.tipo_rescisao}</p>
+          )}
+        </div>
+      </div>
+    )
+  );
+
+  // Componente para exibir Horas Extras
+  const HorasExtrasSection = () => (
     <div style={{
       background: 'white',
       padding: '30px',
@@ -50,10 +80,13 @@ const ResultadosTrabalhistas = ({ tipo, resultados, dadosEntrada }) => {
           <li>Verifique convenção coletiva para percentuais superiores</li>
         </ul>
       </div>
+
+      <DadosEntradaSection />
     </div>
   );
 
-  const renderVerbasRescisorias = () => (
+  // Componente para exibir Verbas Rescisórias
+  const VerbasRescisoriasSection = () => (
     <div style={{
       background: 'white',
       padding: '30px',
@@ -102,29 +135,12 @@ const ResultadosTrabalhistas = ({ tipo, resultados, dadosEntrada }) => {
         </p>
       </div>
 
-      {/* Informações dos Dados de Entrada */}
-      {dadosEntrada && (
-        <div style={{ 
-          background: '#f8f9fa', 
-          padding: '15px', 
-          borderRadius: '8px', 
-          marginTop: '20px',
-          border: '1px solid #dee2e6'
-        }}>
-          <h4 style={{ margin: '0 0 10px 0', color: '#495057' }}>📋 Dados Utilizados no Cálculo</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.9em' }}>
-            <p><strong>CPF:</strong> {dadosEntrada.cpf || 'Não informado'}</p>
-            <p><strong>Salário:</strong> {formatarMoeda(dadosEntrada.salario)}</p>
-            <p><strong>Data Admissão:</strong> {dadosEntrada.data_admissao || 'Não informado'}</p>
-            <p><strong>Data Rescisão:</strong> {dadosEntrada.data_rescisao || 'Não informado'}</p>
-            <p><strong>Tipo Rescisão:</strong> {dadosEntrada.tipo_rescisao || 'Não informado'}</p>
-          </div>
-        </div>
-      )}
+      <DadosEntradaSection />
     </div>
   );
 
-  const renderAdicionalNoturno = () => (
+  // Componente para exibir Adicional Noturno
+  const AdicionalNoturnoSection = () => (
     <div style={{
       background: 'white',
       padding: '30px',
@@ -162,62 +178,49 @@ const ResultadosTrabalhistas = ({ tipo, resultados, dadosEntrada }) => {
         </ul>
       </div>
 
-      {/* Informações dos Dados de Entrada */}
-      {dadosEntrada && (
-        <div style={{ 
-          background: '#f8f9fa', 
-          padding: '15px', 
-          borderRadius: '8px', 
-          marginTop: '20px',
-          border: '1px solid #dee2e6'
-        }}>
-          <h4 style={{ margin: '0 0 10px 0', color: '#495057' }}>📋 Dados Utilizados no Cálculo</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.9em' }}>
-            <p><strong>CPF:</strong> {dadosEntrada.cpf || 'Não informado'}</p>
-            <p><strong>Salário:</strong> {formatarMoeda(dadosEntrada.salario)}</p>
-          </div>
-        </div>
-      )}
+      <DadosEntradaSection />
     </div>
   );
 
-  switch (tipo) {
-    case 'horas-extras':
-      return renderHorasExtras();
-    case 'verbas-rescisorias':
-      return renderVerbasRescisorias();
-    case 'adicional-noturno':
-      return renderAdicionalNoturno();
-    default:
-      return (
-        <div style={{
-          background: 'white',
-          padding: '30px',
-          borderRadius: '12px',
-          border: '1px solid #dee2e6'
-        }}>
-          <h3 style={{ color: '#dc3545', marginBottom: '25px', textAlign: 'center' }}>
-            ⚠️ Tipo de Cálculo Não Reconhecido
-          </h3>
-          <div style={{ 
-            background: '#f8f9fa',
-            padding: '20px',
-            borderRadius: '8px',
-            overflow: 'auto',
-            fontSize: '0.9em'
-          }}>
-            <h4 style={{ margin: '0 0 10px 0', color: '#495057' }}>Dados de Entrada:</h4>
-            <pre style={{ margin: '0', color: '#6c757d' }}>
-              {JSON.stringify(dadosEntrada, null, 2)}
-            </pre>
-            <h4 style={{ margin: '10px 0 0 0', color: '#495057' }}>Resultados:</h4>
-            <pre style={{ margin: '0', color: '#6c757d' }}>
-              {JSON.stringify(resultados, null, 2)}
-            </pre>
-          </div>
-        </div>
-      );
-  }
+  // Componente para tipo não reconhecido (debug)
+  const TipoNaoReconhecidoSection = () => (
+    <div style={{
+      background: 'white',
+      padding: '30px',
+      borderRadius: '12px',
+      border: '1px solid #dee2e6'
+    }}>
+      <h3 style={{ color: '#dc3545', marginBottom: '25px', textAlign: 'center' }}>
+        ⚠️ Tipo de Cálculo Não Reconhecido: {tipo}
+      </h3>
+      <div style={{ 
+        background: '#f8f9fa',
+        padding: '20px',
+        borderRadius: '8px',
+        overflow: 'auto',
+        fontSize: '0.9em'
+      }}>
+        <h4 style={{ margin: '0 0 10px 0', color: '#495057' }}>Dados de Entrada:</h4>
+        <pre style={{ margin: '0', color: '#6c757d' }}>
+          {JSON.stringify(dadosEntrada, null, 2)}
+        </pre>
+        <h4 style={{ margin: '10px 0 0 0', color: '#495057' }}>Resultados:</h4>
+        <pre style={{ margin: '0', color: '#6c757d' }}>
+          {JSON.stringify(resultados, null, 2)}
+        </pre>
+      </div>
+    </div>
+  );
+
+  // Mapeamento de tipos para componentes
+  const tipoMap = {
+    'horas-extras': HorasExtrasSection,
+    'verbas-rescisorias': VerbasRescisoriasSection,
+    'adicional-noturno': AdicionalNoturnoSection
+  };
+
+  const Componente = tipoMap[tipo] || TipoNaoReconhecidoSection;
+  return <Componente />;
 };
 
 export default ResultadosTrabalhistas;

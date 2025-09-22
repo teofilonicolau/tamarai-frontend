@@ -72,9 +72,12 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
         }
       }
       
+      // ✅ CORREÇÃO ESLint: Regex sem escape desnecessário
+      // ANTES: parseFloat(values.salario.replace(/[^\d,]/g, '').replace(',', '.'))
+      // AGORA: Regex simples com hífen no final da classe de caracteres
       onCalcular({
         ...values,
-        salario: parseFloat(values.salario.replace(/[^\d,]/g, '').replace(',', '.'))
+        salario: parseFloat(values.salario.replace(/[^\d.,-]/g, '').replace(',', '.'))
       });
     }
   };

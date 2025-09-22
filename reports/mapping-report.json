@@ -1,0 +1,376 @@
+{
+  "generatedAt": "2025-09-20T15:03:46.397Z",
+  "apiBaseUrl": "https://tamarai-backend-production.up.railway.app",
+  "openapiUrl": "https://tamarai-backend-production.up.railway.app/openapi.json",
+  "summary": {
+    "totalFrontendEndpoints": 41,
+    "totalCallsDetected": 1
+  },
+  "details": [
+    {
+      "keyPath": "ai.consulta",
+      "path": "/api/v1/consulta",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "ai.analise",
+      "path": "/api/v1/analise",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "ai.parecer",
+      "path": "/api/v1/parecer-juridico",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "previdenciario.auxilio_doenca",
+      "path": "/api/v1/previdenciario/peticao-auxilio-doenca",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "previdenciario.aposentadoria_invalidez",
+      "path": "/api/v1/previdenciario/peticao-aposentadoria-invalidez",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "previdenciario.aposentadoria_especial",
+      "path": "/api/v1/previdenciario/peticao-aposentadoria-especial",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "previdenciario.aposentadoria_tempo_contribuicao",
+      "path": "/api/v1/previdenciario/peticao-aposentadoria-tempo-contribuicao",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "previdenciario.aposentadoria_rural",
+      "path": "/api/v1/previdenciario/peticao-aposentadoria-rural",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "previdenciario.pensao_morte",
+      "path": "/api/v1/previdenciario/peticao-pensao-morte",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "previdenciario.bpc_loas",
+      "path": "/api/v1/previdenciario/peticao-bpc-loas",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "previdenciario.salario_maternidade",
+      "path": "/api/v1/previdenciario/peticao-salario-maternidade",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "previdenciario.revisao_vida_toda",
+      "path": "/api/v1/previdenciario/peticao-revisao-vida-toda",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "previdenciario.revisao_beneficio",
+      "path": "/api/v1/previdenciario/peticao-revisao-beneficio",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "previdenciario.peticao_com_calculo",
+      "path": "/api/v1/previdenciario/peticao-com-calculo",
+      "method": null,
+      "status": "NOT_FOUND",
+      "backendAvailableMethods": []
+    },
+    {
+      "keyPath": "previdenciario.peticao_pdf",
+      "path": "/api/v1/previdenciario/peticao-pdf",
+      "method": null,
+      "status": "NOT_FOUND",
+      "backendAvailableMethods": []
+    },
+    {
+      "keyPath": "trabalhista.peticao_vinculo",
+      "path": "/api/v1/trabalhista/peticao-vinculo",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "trabalhista.quesitos_insalubridade",
+      "path": "/api/v1/trabalhista/quesitos-insalubridade",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "consumidor.peticao_vicio_produto",
+      "path": "/api/v1/consumidor/peticao-vicio-produto",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "consumidor.peticao_cobranca_indevida",
+      "path": "/api/v1/consumidor/peticao-cobranca-indevida",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "civil.peticao_cobranca",
+      "path": "/api/v1/civil/peticao-cobranca",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "civil.peticao_indenizacao",
+      "path": "/api/v1/civil/peticao-indenizacao",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "processual.peticao_execucao",
+      "path": "/api/v1/processual-civil/peticao-execucao",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "processual.peticao_monitoria",
+      "path": "/api/v1/processual-civil/peticao-monitoria",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "calculadoras.previdenciario.tempo_especial",
+      "path": "/api/v1/tempo-especial",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "calculadoras.previdenciario.periodo_graca",
+      "path": "/api/v1/periodo-graca",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "calculadoras.previdenciario.regra_transicao_ec103",
+      "path": "/api/v1/regra-transicao-ec103",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "calculadoras.previdenciario.revisao_vida_toda",
+      "path": "/api/v1/revisao-vida-toda",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "calculadoras.trabalhista.horas_extras",
+      "path": "/api/v1/horas-extras",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "calculadoras.trabalhista.verbas_rescisorias",
+      "path": "/api/v1/verbas-rescisorias",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "calculadoras.trabalhista.adicional_noturno",
+      "path": "/api/v1/adicional-noturno",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "calculadoras.processual.valor_causa",
+      "path": "/api/v1/valor-causa",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "calculadoras.processual.liquidacao_sentenca",
+      "path": "/api/v1/liquidacao-sentenca",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "calculadoras.processual.juros_mora",
+      "path": "/api/v1/juros-mora",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "calculadoras.processual.correcao_monetaria",
+      "path": "/api/v1/correcao-monetaria",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "calculadoras.familia.pensao_alimenticia",
+      "path": "/api/v1/pensao-alimenticia",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "POST"
+      ]
+    },
+    {
+      "keyPath": "analytics.dashboard",
+      "path": "/api/v1/analytics/dashboard",
+      "method": "GET",
+      "status": "OK",
+      "backendAvailableMethods": [
+        "GET"
+      ]
+    },
+    {
+      "keyPath": "analytics.metricas_detalhadas",
+      "path": "/api/v1/analytics/metricas-detalhadas",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "GET"
+      ]
+    },
+    {
+      "keyPath": "analytics.status",
+      "path": "/api/v1/analytics/status",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "GET"
+      ]
+    },
+    {
+      "keyPath": "sistema.status",
+      "path": "/api/v1/status",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "GET"
+      ]
+    },
+    {
+      "keyPath": "sistema.info",
+      "path": "/api/v1/info",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "GET"
+      ]
+    },
+    {
+      "keyPath": "sistema.areas_direito",
+      "path": "/api/v1/areas-direito",
+      "method": null,
+      "status": "UNKNOWN_METHOD",
+      "backendAvailableMethods": [
+        "GET"
+      ]
+    }
+  ]
+}
