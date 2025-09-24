@@ -13,15 +13,38 @@ const FormularioConsumidor = ({ tipoPeticao }) => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      const cleanedData = {
+        tipo_problema: data.tipo_problema,
+        data_ocorrencia: data.data_ocorrencia ? new Date(data.data_ocorrencia).toISOString().split('T')[0] : '',
+        descricao_problema: data.descricao_problema,
+        empresa_re: data.empresa_re,
+        cnpj_empresa: data.cnpj_empresa.replace(/\D/g, ''),
+        endereco_empresa: data.endereco_empresa || '',
+        valor_produto_servico: parseFloat(data.valor_produto_servico) || 0,
+        valor_prejuizo: parseFloat(data.valor_prejuizo) || 0,
+        possui_nota_fiscal: data.possui_nota_fiscal || false,
+        garantia_vigente: data.garantia_vigente || false,
+        tentativa_solucao_amigavel: data.tentativa_solucao_amigavel || false,
+        provas_disponiveis: data.provas_disponiveis ? data.provas_disponiveis.split('\n').map(prova => prova.trim()).filter(prova => prova) : []
+      };
+
+      if (!cleanedData.data_ocorrencia) {
+        throw new Error('Data da ocorrência é obrigatória');
+      }
+      if (cleanedData.valor_produto_servico <= 0 && cleanedData.valor_prejuizo <= 0) {
+        throw new Error('Informe pelo menos o valor do produto/serviço ou do prejuízo');
+      }
+
       const endpoint = tipoPeticao === 'peticao-vicio-produto' 
         ? ENDPOINTS.consumidor.peticao_vicio_produto
         : ENDPOINTS.consumidor.peticao_cobranca_indevida;
-      
-      const response = await api.post(endpoint, data);
+
+      const response = await api.post(endpoint, cleanedData);
       setPeticaoGerada(response.data);
       toast.success('Petição gerada com sucesso!');
-    } catch {
-      toast.error('Erro ao gerar petição');
+    } catch (error) {
+      const msg = error.response?.data?.detail || error.message || 'Erro ao gerar petição. Verifique os dados.';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -32,11 +55,8 @@ const FormularioConsumidor = ({ tipoPeticao }) => {
       const endpoint = tipoPeticao === 'peticao-vicio-produto' 
         ? `${ENDPOINTS.consumidor.peticao_vicio_produto}/pdf`
         : `${ENDPOINTS.consumidor.peticao_cobranca_indevida}/pdf`;
-      
-      const response = await api.post(endpoint, 
-        peticaoGerada.dados_utilizados, 
-        { responseType: 'blob' }
-      );
+
+      const response = await api.post(endpoint, peticaoGerada.dados_utilizados, { responseType: 'blob' });
       
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -61,7 +81,6 @@ const FormularioConsumidor = ({ tipoPeticao }) => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             {getTitulo()}
@@ -72,7 +91,6 @@ const FormularioConsumidor = ({ tipoPeticao }) => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          
           {/* Seção 1: Dados do Problema */}
           <div className="border-b border-gray-200 dark:border-gray-600 pb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -87,6 +105,7 @@ const FormularioConsumidor = ({ tipoPeticao }) => {
                   {...register('tipo_problema', { required: 'Tipo do problema é obrigatório' })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder={tipoPeticao === 'peticao-vicio-produto' ? 'Ex: Defeito no produto' : 'Ex: Cobrança indevida'}
+                  defaultValue={tipoPeticao === 'peticao-vicio-produto' ? 'Defeito no produto' : 'Cobrança indevida'}
                 />
                 {errors.tipo_problema && (
                   <p className="text-red-600 text-sm mt-1">{errors.tipo_problema.message}</p>
@@ -135,12 +154,12 @@ const FormularioConsumidor = ({ tipoPeticao }) => {
                   Nome da Empresa *
                 </label>
                 <input
-                  {...register('empresa_ré', { required: 'Nome da empresa é obrigatório' })}
+                  {...register('empresa_re', { required: 'Nome da empresa é obrigatório' })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="Nome da empresa responsável"
                 />
-                {errors.empresa_ré && (
-                  <p className="text-red-600 text-sm mt-1">{errors.empresa_ré.message}</p>
+                {errors.empresa_re && (
+                  <p className="text-red-600 text-sm mt-1">{errors.empresa_re.message}</p>
                 )}
               </div>
 
@@ -172,7 +191,7 @@ const FormularioConsumidor = ({ tipoPeticao }) => {
             </div>
           </div>
 
-          {/* Seção 3: Valores */}
+          {/* Seção 3: Valores Envolvidos */}
           <div className="border-b border-gray-200 dark:border-gray-600 pb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               💰 Valores Envolvidos
@@ -180,20 +199,26 @@ const FormularioConsumidor = ({ tipoPeticao }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Valor do Produto/Serviço (R\$)
+                  Valor do Produto/Serviço (R$) *
                 </label>
                 <input
                   type="number"
                   step="0.01"
-                  {...register('valor_produto_servico')}
+                  {...register('valor_produto_servico', { 
+                    required: 'Valor do produto/serviço é obrigatório',
+                    min: { value: 0.01, message: 'Valor deve ser maior que 0' }
+                  })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="0.00"
                 />
+                {errors.valor_produto_servico && (
+                  <p className="text-red-600 text-sm mt-1">{errors.valor_produto_servico.message}</p>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Valor do Prejuízo (R\$)
+                  Valor do Prejuízo (R$)
                 </label>
                 <input
                   type="number"
@@ -215,7 +240,7 @@ const FormularioConsumidor = ({ tipoPeticao }) => {
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  {...register('nota_fiscal')}
+                  {...register('possui_nota_fiscal')}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -250,7 +275,7 @@ const FormularioConsumidor = ({ tipoPeticao }) => {
                   Provas Disponíveis (uma por linha)
                 </label>
                 <textarea
-                  {...register('provas_disponíveis')}
+                  {...register('provas_disponiveis')}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="Ex:&#10;Fotos do produto defeituoso&#10;Comprovantes de pagamento&#10;Correspondências com a empresa"
@@ -279,7 +304,6 @@ const FormularioConsumidor = ({ tipoPeticao }) => {
               </button>
             )}
           </div>
-
         </form>
 
         {/* Preview da Petição */}
@@ -295,7 +319,6 @@ const FormularioConsumidor = ({ tipoPeticao }) => {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

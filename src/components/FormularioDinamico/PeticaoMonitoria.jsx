@@ -12,12 +12,32 @@ const PeticaoMonitoria = () => {
 
   const onSubmit = async (data) => {
     setLoading(true);
+    const formattedData = {
+      tipo_peticao: data.tipo_peticao,
+      numero_processo: data.numero_processo,
+      parte_contraria: data.parte_contraria,
+      cpf_cnpj_parte_contraria: data.cpf_cnpj_parte_contraria.replace(/\D/g, ''),
+      endereco_parte_contraria: data.endereco_parte_contraria,
+      valor_execucao: parseFloat(data.valor_execucao) || 0,
+      data_vencimento: data.data_vencimento ? new Date(data.data_vencimento).toISOString().split('T')[0] : '',
+      titulo_executivo: data.titulo_executivo,
+      descricao_pedido: data.descricao_pedido,
+      valor_aluguel: parseFloat(data.valor_aluguel) || 0,
+      meses_atraso: parseInt(data.meses_atraso) || 0,
+      imovel_endereco: data.imovel_endereco,
+      documentos_anexos: data.documentos_anexos ? data.documentos_anexos.split('\n').map(doc => doc.trim()).filter(Boolean) : [],
+      urgencia_fundamentacao: data.urgencia_fundamentacao,
+      justica_gratuita: data.justica_gratuita,
+      citacao_correios: data.citacao_correios,
+      conversao_execucao: data.conversao_execucao,
+    };
     try {
-      const response = await api.post(ENDPOINTS.processual.peticao_monitoria, data);
+      const response = await api.post(ENDPOINTS.processual.peticao_monitoria, formattedData);
       setPeticao(response.data);
       toast.success('Petição monitória gerada com sucesso!');
-    } catch {
-      toast.error('Erro ao gerar petição');
+    } catch (error) {
+      const msg = error.response?.data?.detail || 'Erro ao gerar petição. Verifique os dados.';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -340,7 +360,7 @@ const PeticaoMonitoria = () => {
                 className="theme-button"
                 style={{ background: '#10B981' }}
               >
-                �� Baixar PDF
+                📄 Baixar PDF
               </button>
             )}
           </div>

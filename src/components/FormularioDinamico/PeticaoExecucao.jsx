@@ -13,11 +13,33 @@ const PeticaoExecucao = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      const response = await api.post(ENDPOINTS.processual.peticao_execucao, data);
+      const cleanedData = {
+        tipo_peticao: data.tipo_peticao,
+        numero_processo: data.numero_processo || '',
+        nome_parte_contraria: data.parte_contraria,
+        cpf_cnpj_parte_contraria: data.cpf_cnpj_parte_contraria.replace(/\D/g, ''),
+        endereco_parte_contraria: data.endereco_parte_contraria || '',
+        valor_execucao: parseFloat(data.valor_execucao) || 0,
+        data_vencimento: data.data_vencimento ? new Date(data.data_vencimento).toISOString().split('T')[0] : '',
+        titulo_executivo: data.titulo_executivo || '',
+        descricao_pedido: data.descricao_pedido || '',
+        valor_aluguel: parseFloat(data.valor_aluguel) || 0,
+        meses_atraso: parseInt(data.meses_atraso) || 0,
+        endereco_imovel: data.imovel_endereco || '',
+        documentos_anexos: data.documentos_anexos ? data.documentos_anexos.split('\n').map(doc => doc.trim()).filter(doc => doc) : [],
+        fundamentacao_urgencia: data.fundamentacao_urgencia || ''
+      };
+
+      if (cleanedData.valor_execucao <= 0) {
+        throw new Error('Valor da execução deve ser maior que 0');
+      }
+
+      const response = await api.post(ENDPOINTS.processual.peticao_execucao, cleanedData);
       setPeticao(response.data);
       toast.success('Petição de execução gerada com sucesso!');
-    } catch {
-      toast.error('Erro ao gerar petição');
+    } catch (error) {
+      const msg = error.response?.data?.detail || error.message || 'Erro ao gerar petição. Verifique os dados.';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -46,8 +68,7 @@ const PeticaoExecucao = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="theme-card p-6">
-        
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             📊 Petição de Execução
@@ -58,7 +79,6 @@ const PeticaoExecucao = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          
           {/* Dados Básicos */}
           <div className="border-b border-gray-200 dark:border-gray-600 pb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -73,6 +93,7 @@ const PeticaoExecucao = () => {
                   {...register('tipo_peticao', { required: 'Tipo é obrigatório' })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="Ex: Petição Inicial de Execução de Título Extrajudicial"
+                  defaultValue="Petição Inicial de Execução de Título Extrajudicial"
                 />
                 {errors.tipo_peticao && (
                   <p className="text-red-600 text-sm mt-1">{errors.tipo_peticao.message}</p>
@@ -119,7 +140,7 @@ const PeticaoExecucao = () => {
                 <input
                   {...register('cpf_cnpj_parte_contraria', { required: 'CPF/CNPJ é obrigatório' })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="000.000.000-00"
+                  placeholder="000.000.000-00 ou 00.000.000/0000-00"
                 />
                 {errors.cpf_cnpj_parte_contraria && (
                   <p className="text-red-600 text-sm mt-1">{errors.cpf_cnpj_parte_contraria.message}</p>
@@ -148,12 +169,15 @@ const PeticaoExecucao = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Valor da Execução (R\$) *
+                  Valor da Execução (R$) *
                 </label>
                 <input
                   type="number"
                   step="0.01"
-                  {...register('valor_execucao', { required: 'Valor é obrigatório' })}
+                  {...register('valor_execucao', { 
+                    required: 'Valor é obrigatório',
+                    min: { value: 0.01, message: 'Valor deve ser maior que 0' }
+                  })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="0.00"
                 />
@@ -206,7 +230,7 @@ const PeticaoExecucao = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Valor do Aluguel (R\$)
+                  Valor do Aluguel (R$)
                 </label>
                 <input
                   type="number"
@@ -265,7 +289,7 @@ const PeticaoExecucao = () => {
                   Fundamentação da Urgência
                 </label>
                 <textarea
-                  {...register('urgencia_fundamentacao')}
+                  {...register('fundamentacao_urgencia')}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="Justifique a urgência do caso, se aplicável..."
@@ -279,8 +303,7 @@ const PeticaoExecucao = () => {
             <button
               type="submit"
               disabled={loading}
-              className="theme-button flex-1"
-              style={{ background: '#3B82F6' }}
+              className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
             >
               {loading ? 'Gerando...' : '📊 Gerar Petição de Execução'}
             </button>
@@ -289,14 +312,12 @@ const PeticaoExecucao = () => {
               <button
                 type="button"
                 onClick={gerarPDF}
-                className="theme-button"
-                style={{ background: '#10B981' }}
+                className="bg-green-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-green-700"
               >
                 📥 Baixar PDF
               </button>
             )}
           </div>
-
         </form>
 
         {peticao && (
@@ -311,7 +332,6 @@ const PeticaoExecucao = () => {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

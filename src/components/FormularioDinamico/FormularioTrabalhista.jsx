@@ -13,15 +13,42 @@ const FormularioTrabalhista = ({ tipoPeticao }) => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      const cleanedData = {
+        tipo_acao: data.tipo_acao,
+        cargo_funcao: data.cargo_funcao,
+        empresa_re: data.empresa_re,
+        cnpj_empresa: data.cnpj_empresa.replace(/\D/g, ''),
+        periodo_trabalho_inicio: data.periodo_trabalho_inicio ? new Date(data.periodo_trabalho_inicio).toISOString().split('T')[0] : '',
+        periodo_trabalho_fim: data.periodo_trabalho_fim ? new Date(data.periodo_trabalho_fim).toISOString().split('T')[0] : '',
+        salario_registrado: parseFloat(data.salario_registrado) || 0,
+        salario_real: parseFloat(data.salario_real) || 0,
+        jornada_contratual: data.jornada_contratual || '',
+        jornada_real: data.jornada_real || '',
+        horas_extras_habituais: data.horas_extras_habituais || false,
+        adicional_insalubridade: data.adicional_insalubridade || false,
+        adicional_periculosidade: data.adicional_periculosidade || false,
+        equipamentos_seguranca: data.equipamentos_seguranca || false,
+        testemunhas: data.testemunhas ? data.testemunhas.split('\n').map(t => t.trim()).filter(t => t) : [],
+        documentos_comprobatorios: data.documentos_comprobatorios ? data.documentos_comprobatorios.split('\n').map(doc => doc.trim()).filter(doc => doc) : []
+      };
+
+      if (!cleanedData.periodo_trabalho_inicio) {
+        throw new Error('Data de início é obrigatória');
+      }
+      if (cleanedData.salario_registrado <= 0 && cleanedData.salario_real <= 0) {
+        throw new Error('Informe pelo menos o salário registrado ou real');
+      }
+
       const endpoint = tipoPeticao === 'peticao-vinculo' 
         ? ENDPOINTS.trabalhista.peticao_vinculo
         : ENDPOINTS.trabalhista.quesitos_insalubridade;
-      
-      const response = await api.post(endpoint, data);
+
+      const response = await api.post(endpoint, cleanedData);
       setPeticaoGerada(response.data);
       toast.success('Petição gerada com sucesso!');
-    } catch {
-      toast.error('Erro ao gerar petição');
+    } catch (error) {
+      const msg = error.response?.data?.detail || error.message || 'Erro ao gerar petição. Verifique os dados.';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -32,11 +59,8 @@ const FormularioTrabalhista = ({ tipoPeticao }) => {
       const endpoint = tipoPeticao === 'peticao-vinculo' 
         ? `${ENDPOINTS.trabalhista.peticao_vinculo}/pdf`
         : `${ENDPOINTS.trabalhista.quesitos_insalubridade}/pdf`;
-      
-      const response = await api.post(endpoint, 
-        peticaoGerada.dados_utilizados, 
-        { responseType: 'blob' }
-      );
+
+      const response = await api.post(endpoint, peticaoGerada.dados_utilizados, { responseType: 'blob' });
       
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -61,7 +85,6 @@ const FormularioTrabalhista = ({ tipoPeticao }) => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             {getTitulo()}
@@ -72,7 +95,6 @@ const FormularioTrabalhista = ({ tipoPeticao }) => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          
           {/* Seção 1: Dados da Ação */}
           <div className="border-b border-gray-200 dark:border-gray-600 pb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -87,6 +109,7 @@ const FormularioTrabalhista = ({ tipoPeticao }) => {
                   {...register('tipo_acao', { required: 'Tipo de ação é obrigatório' })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder={tipoPeticao === 'peticao-vinculo' ? 'Reconhecimento de Vínculo Empregatício' : 'Perícia de Insalubridade'}
+                  defaultValue={tipoPeticao === 'peticao-vinculo' ? 'Reconhecimento de Vínculo Empregatício' : 'Perícia de Insalubridade'}
                 />
                 {errors.tipo_acao && (
                   <p className="text-red-600 text-sm mt-1">{errors.tipo_acao.message}</p>
@@ -120,12 +143,12 @@ const FormularioTrabalhista = ({ tipoPeticao }) => {
                   Nome da Empresa *
                 </label>
                 <input
-                  {...register('empresa_ré', { required: 'Nome da empresa é obrigatório' })}
+                  {...register('empresa_re', { required: 'Nome da empresa é obrigatório' })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="Razão social da empresa"
                 />
-                {errors.empresa_ré && (
-                  <p className="text-red-600 text-sm mt-1">{errors.empresa_ré.message}</p>
+                {errors.empresa_re && (
+                  <p className="text-red-600 text-sm mt-1">{errors.empresa_re.message}</p>
                 )}
               </div>
 
@@ -186,15 +209,21 @@ const FormularioTrabalhista = ({ tipoPeticao }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Salário Registrado (R$)
+                  Salário Registrado (R$) *
                 </label>
                 <input
                   type="number"
                   step="0.01"
-                  {...register('salario_registrado')}
+                  {...register('salario_registrado', { 
+                    required: 'Salário registrado é obrigatório',
+                    min: { value: 0.01, message: 'Salário deve ser maior que 0' }
+                  })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="0.00"
                 />
+                {errors.salario_registrado && (
+                  <p className="text-red-600 text-sm mt-1">{errors.salario_registrado.message}</p>
+                )}
               </div>
 
               <div>
@@ -220,17 +249,21 @@ const FormularioTrabalhista = ({ tipoPeticao }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Jornada Contratual
+                  Jornada Contratual *
                 </label>
                 <select
-                  {...register('jornada_contratual')}
+                  {...register('jornada_contratual', { required: 'Jornada contratual é obrigatória' })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
+                  <option value="">Selecione</option>
                   <option value="44h semanais">44h semanais</option>
                   <option value="40h semanais">40h semanais</option>
                   <option value="36h semanais">36h semanais</option>
                   <option value="30h semanais">30h semanais</option>
                 </select>
+                {errors.jornada_contratual && (
+                  <p className="text-red-600 text-sm mt-1">{errors.jornada_contratual.message}</p>
+                )}
               </div>
 
               <div>
@@ -299,7 +332,7 @@ const FormularioTrabalhista = ({ tipoPeticao }) => {
             </div>
           </div>
 
-          {/* Seção 7: Provas */}
+          {/* Seção 7: Provas e Testemunhas */}
           <div className="border-b border-gray-200 dark:border-gray-600 pb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               📋 Provas e Testemunhas
@@ -351,7 +384,6 @@ const FormularioTrabalhista = ({ tipoPeticao }) => {
               </button>
             )}
           </div>
-
         </form>
 
         {/* Preview da Petição */}
@@ -370,7 +402,6 @@ const FormularioTrabalhista = ({ tipoPeticao }) => {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

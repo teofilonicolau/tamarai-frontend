@@ -12,12 +12,15 @@ const ConsultaJuridica = () => {
 
   const onSubmit = async (data) => {
     setLoading(true);
+    setResposta(null);
     try {
       const response = await api.post(ENDPOINTS.ai.consulta, data);
-      setResposta(response.data);
+      const respostaText = response.data?.resposta || response.data?.resultado || 'Resposta não disponível';
+      setResposta({ texto: respostaText });
       toast.success('Consulta realizada com sucesso!');
-    } catch {
-      toast.error('Erro ao realizar consulta');
+    } catch (err) {
+      const msg = err.response?.data?.detail || err.message || 'Erro ao realizar consulta';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -122,7 +125,7 @@ const ConsultaJuridica = () => {
             </h3>
             <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
               <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200">
-                {resposta.resposta || JSON.stringify(resposta, null, 2)}
+                {resposta.texto}
               </pre>
             </div>
           </div>

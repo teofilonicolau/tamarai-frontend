@@ -26,6 +26,27 @@ const FormularioPeticao = ({ tipoPeticao }) => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      // Limpar CPF e formatar dados
+      const cleanedData = {
+        ...data,
+        tipo_beneficio: tipoPeticao,
+        cpf: data.cpf.replace(/\D/g, ''),
+        der: data.der ? new Date(data.der).toISOString().split('T')[0] : '',
+        valor_causa: parseFloat(data.valor_causa) || 0,
+        informacoes_medicas: data.informacoes_medicas || '',
+        cid_principal: data.cid_principal || '',
+        exposicao_agentes_nocivos: data.exposicao_agentes_nocivos || '',
+        motivo_recusa: data.motivo_recusa || '',
+        endereco_completo: data.endereco_completo || '',
+        rg: data.rg || '',
+        orgao_emissor: data.orgao_emissor || ''
+      };
+
+      // Validação básica do CPF
+      if (cleanedData.cpf.length !== 11) {
+        throw new Error('CPF deve conter 11 dígitos');
+      }
+
       // Mapear endpoint baseado no tipo de petição
       const endpointMap = {
         'auxilio-doenca': ENDPOINTS.previdenciario.auxilio_doenca,
@@ -41,11 +62,14 @@ const FormularioPeticao = ({ tipoPeticao }) => {
       };
 
       const endpoint = endpointMap[tipoPeticao] || `/previdenciario/peticao-${tipoPeticao}`;
-      const response = await api.post(endpoint, data);
+      const response = await api.post(endpoint, cleanedData);
       setPeticaoGerada(response.data);
       toast.success('Petição gerada com sucesso!');
-    } catch {
-      toast.error('Erro ao gerar petição');
+    } catch (error) {
+      const msg = error.response?.status === 422 
+        ? error.response?.data?.detail || 'Erro de validação nos dados. Verifique os campos: CPF, datas, valores.'
+        : 'Erro ao gerar petição. Tente novamente.';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -113,7 +137,13 @@ const FormularioPeticao = ({ tipoPeticao }) => {
                   CPF *
                 </label>
                 <input
-                  {...register('cpf', { required: 'CPF é obrigatório' })}
+                  {...register('cpf', { 
+                    required: 'CPF é obrigatório',
+                    pattern: {
+                      value: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
+                      message: 'Formato de CPF inválido (use 000.000.000-00)'
+                    }
+                  })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="000.000.000-00"
                 />
@@ -182,10 +212,15 @@ const FormularioPeticao = ({ tipoPeticao }) => {
                 <input
                   type="number"
                   step="0.01"
-                  {...register('valor_causa')}
+                  {...register('valor_causa', {
+                    min: { value: 0, message: 'Valor deve ser maior ou igual a 0' }
+                  })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="50000.00"
                 />
+                {errors.valor_causa && (
+                  <p className="text-red-600 text-sm mt-1">{errors.valor_causa.message}</p>
+                )}
               </div>
 
               <div className="md:col-span-2">
@@ -252,6 +287,20 @@ const FormularioPeticao = ({ tipoPeticao }) => {
                   </div>
                 )}
 
+                {camposVisiveis.includes('exposicao_agentes_nocivos') && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      Exposição a Agentes Nocivos
+                    </label>
+                    <textarea
+                      {...register('exposicao_agentes_nocivos')}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="Descreva os agentes nocivos e período de exposição..."
+                    />
+                  </div>
+                )}
+
                 {camposVisiveis.includes('renda_familiar') && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -260,12 +309,73 @@ const FormularioPeticao = ({ tipoPeticao }) => {
                     <input
                       type="number"
                       step="0.01"
-                      {...register('renda_familiar')}
+                      {...register('renda_familiar', {
+                        min: { value: 0, message: 'Renda deve ser maior ou igual a 0' }
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                    {errors.renda_familiar && (
+                      <p className="text-red-600 text-sm mt-1">{errors.renda_familiar.message}</p>
+                    )}
+                  </div>
+                )}
+
+                {camposVisiveis.includes('tipo_deficiencia') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      Tipo de Deficiência
+                    </label>
+                    <input
+                      {...register('tipo_deficiencia')}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="Descreva o tipo de deficiência"
                     />
                   </div>
                 )}
 
+                {camposVisiveis.includes('possui_dependentes') && (
+                  <div className="md:col-span-2">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        {...register('possui_dependentes')}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                        Possui Dependentes?
+                      </span>
+                    </label>
+                  </div>
+                )}
+
+                {camposVisiveis.includes('tipo_parto') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      Tipo de Parto
+                    </label>
+                    <select
+                      {...register('tipo_parto')}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="">Selecione</option>
+                      <option value="normal">Normal</option>
+                      <option value="cesariana">Cesariana</option>
+                    </select>
+                  </div>
+                )}
+
+                {camposVisiveis.includes('tipo_atividade_rural') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      Tipo de Atividade Rural
+                    </label>
+                    <input
+                      {...register('tipo_atividade_rural')}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="Descreva a atividade rural"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}

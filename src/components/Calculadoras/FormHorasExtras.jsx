@@ -1,59 +1,90 @@
-// src/components/Calculadoras/FormHorasExtras.jsx
 import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import api from '../../services/api';
+import { ENDPOINTS } from '../../config/endpoints';
 
-const FormHorasExtras = ({ onCalcular, loading }) => {
+const FormHorasExtras = () => {
   const [dados, setDados] = useState({
     jornada_contratual: '',
     jornada_real: '',
     dias_trabalhados: '',
-    valor_hora: ''
+    valor_hora: '',
+    percentual_adicional: '50'
   });
-
   const [erros, setErros] = useState({});
+  const [resultado, setResultado] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const validarFormulario = () => {
     const novosErros = {};
 
-    if (!dados.jornada_contratual || dados.jornada_contratual <= 0) {
+    if (!dados.jornada_contratual || Number(dados.jornada_contratual) <= 0) {
       novosErros.jornada_contratual = 'Informe a jornada contratual';
     }
-    if (!dados.jornada_real || dados.jornada_real <= 0) {
+    if (!dados.jornada_real || Number(dados.jornada_real) <= 0) {
       novosErros.jornada_real = 'Informe a jornada real trabalhada';
     }
-    if (dados.jornada_real <= dados.jornada_contratual) {
+    if (Number(dados.jornada_real) <= Number(dados.jornada_contratual)) {
       novosErros.jornada_real = 'Jornada real deve ser maior que a contratual';
     }
-    if (!dados.dias_trabalhados || dados.dias_trabalhados <= 0 || dados.dias_trabalhados > 31) {
+    if (!dados.dias_trabalhados || Number(dados.dias_trabalhados) <= 0 || Number(dados.dias_trabalhados) > 31) {
       novosErros.dias_trabalhados = 'Informe os dias trabalhados (1-31)';
     }
-    if (!dados.valor_hora || dados.valor_hora <= 0) {
+    if (!dados.valor_hora || parseFloat(dados.valor_hora) <= 0) {
       novosErros.valor_hora = 'Informe o valor da hora normal';
+    }
+    if (!dados.percentual_adicional || parseFloat(dados.percentual_adicional) <= 0) {
+      novosErros.percentual_adicional = 'Informe o percentual adicional';
     }
 
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validarFormulario()) {
-      const dadosParaCalcular = {
-        jornada_contratual: parseInt(dados.jornada_contratual),
-        jornada_real: parseInt(dados.jornada_real),
-        dias_trabalhados: parseInt(dados.dias_trabalhados),
-        valor_hora: parseFloat(dados.valor_hora)
-      };
-      onCalcular(dadosParaCalcular);
-    }
-  };
-
   const calcularPrevia = () => {
-    if (dados.jornada_contratual && dados.jornada_real && dados.dias_trabalhados && dados.valor_hora) {
-      const horasExtras = (dados.jornada_real - dados.jornada_contratual) * dados.dias_trabalhados;
-      const valorTotal = horasExtras * dados.valor_hora * 1.5;
+    if (
+      dados.jornada_contratual &&
+      dados.jornada_real &&
+      dados.dias_trabalhados &&
+      dados.valor_hora &&
+      dados.percentual_adicional
+    ) {
+      const horasExtras = (Number(dados.jornada_real) - Number(dados.jornada_contratual)) * Number(dados.dias_trabalhados);
+      const multiplier = 1 + (parseFloat(dados.percentual_adicional) / 100);
+      const valorTotal = horasExtras * parseFloat(dados.valor_hora) * multiplier;
       return { horasExtras, valorTotal };
     }
     return null;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validarFormulario()) return;
+
+    const dadosParaCalcular = {
+      jornada_contratual: Number(dados.jornada_contratual) || 0,
+      jornada_real: Number(dados.jornada_real) || 0,
+      dias_trabalhados: Number(dados.dias_trabalhados) || 0,
+      valor_hora: parseFloat(dados.valor_hora) || 0,
+      percentual_adicional: parseFloat(dados.percentual_adicional) || 50
+    };
+
+    setLoading(true);
+    setResultado(null);
+    try {
+      const response = await api.post(ENDPOINTS.calculadoras.horas_extras, dadosParaCalcular);
+      setResultado({
+        horasExtras: response.data.horas_extras || 0,
+        valorTotal: response.data.valor_total || 0,
+        percentualAplicado: response.data.percentual_adicional || parseFloat(dados.percentual_adicional)
+      });
+      toast.success('Cálculo realizado com sucesso!');
+    } catch (error) {
+      const msg = error.response?.data?.detail || 'Erro no cálculo: verifique os valores';
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const previa = calcularPrevia();
@@ -78,7 +109,7 @@ const FormHorasExtras = ({ onCalcular, loading }) => {
             <input
               type="number"
               value={dados.jornada_contratual}
-              onChange={(e) => setDados({...dados, jornada_contratual: e.target.value})}
+              onChange={(e) => setDados({ ...dados, jornada_contratual: e.target.value })}
               placeholder="Ex: 8"
               style={{
                 width: '100%',
@@ -102,7 +133,7 @@ const FormHorasExtras = ({ onCalcular, loading }) => {
             <input
               type="number"
               value={dados.jornada_real}
-              onChange={(e) => setDados({...dados, jornada_real: e.target.value})}
+              onChange={(e) => setDados({ ...dados, jornada_real: e.target.value })}
               placeholder="Ex: 10"
               style={{
                 width: '100%',
@@ -128,7 +159,7 @@ const FormHorasExtras = ({ onCalcular, loading }) => {
             <input
               type="number"
               value={dados.dias_trabalhados}
-              onChange={(e) => setDados({...dados, dias_trabalhados: e.target.value})}
+              onChange={(e) => setDados({ ...dados, dias_trabalhados: e.target.value })}
               placeholder="Ex: 22"
               style={{
                 width: '100%',
@@ -153,7 +184,7 @@ const FormHorasExtras = ({ onCalcular, loading }) => {
               type="number"
               step="0.01"
               value={dados.valor_hora}
-              onChange={(e) => setDados({...dados, valor_hora: e.target.value})}
+              onChange={(e) => setDados({ ...dados, valor_hora: e.target.value })}
               placeholder="Ex: 12.50"
               style={{
                 width: '100%',
@@ -171,6 +202,34 @@ const FormHorasExtras = ({ onCalcular, loading }) => {
           </div>
         </div>
 
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#495057' }}>
+            Percentual Adicional (%):
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            value={dados.percentual_adicional}
+            onChange={(e) => setDados({ ...dados, percentual_adicional: e.target.value })}
+            placeholder="Ex: 50"
+            style={{
+              width: '100%',
+              padding: '12px',
+              border: `2px solid ${erros.percentual_adicional ? '#dc3545' : '#dee2e6'}`,
+              borderRadius: '8px',
+              fontSize: '1em'
+            }}
+          />
+          {erros.percentual_adicional && (
+            <div style={{ color: '#dc3545', fontSize: '0.9em', marginTop: '5px' }}>
+              {erros.percentual_adicional}
+            </div>
+          )}
+          <div style={{ fontSize: '0.9em', color: '#6c757d', marginTop: '5px', fontStyle: 'italic' }}>
+            💡 Percentual adicional sobre a hora normal (mínimo 50% per CLT)
+          </div>
+        </div>
+
         {previa && (
           <div style={{
             background: '#e8f5e8',
@@ -180,7 +239,7 @@ const FormHorasExtras = ({ onCalcular, loading }) => {
             border: '1px solid #28a745'
           }}>
             <h4 style={{ margin: '0 0 10px 0', color: '#155724' }}>
-              �� Prévia do Cálculo:
+              📊 Prévia do Cálculo:
             </h4>
             <div style={{ color: '#155724', fontSize: '0.95em' }}>
               <p style={{ margin: '5px 0' }}>
@@ -190,7 +249,32 @@ const FormHorasExtras = ({ onCalcular, loading }) => {
                 <strong>Valor estimado:</strong> R$ {previa.valorTotal.toFixed(2)}
               </p>
               <p style={{ margin: '5px 0', fontSize: '0.9em', fontStyle: 'italic' }}>
-                �� Adicional de 50% já aplicado
+                📌 Adicional de {dados.percentual_adicional}% aplicado
+              </p>
+            </div>
+          </div>
+        )}
+
+        {resultado && (
+          <div style={{
+            background: '#d4edda',
+            padding: '15px',
+            borderRadius: '8px',
+            marginBottom: '25px',
+            border: '1px solid #28a745'
+          }}>
+            <h4 style={{ margin: '0 0 10px 0', color: '#155724' }}>
+              📈 Resultado do Cálculo:
+            </h4>
+            <div style={{ color: '#155724', fontSize: '0.95em' }}>
+              <p style={{ margin: '5px 0' }}>
+                <strong>Horas extras totais:</strong> {resultado.horasExtras} horas
+              </p>
+              <p style={{ margin: '5px 0' }}>
+                <strong>Valor total:</strong> R$ {resultado.valorTotal.toFixed(2)}
+              </p>
+              <p style={{ margin: '5px 0', fontSize: '0.9em', fontStyle: 'italic' }}>
+                📌 Adicional de {resultado.percentualAplicado}% aplicado
               </p>
             </div>
           </div>

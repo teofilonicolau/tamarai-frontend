@@ -1,7 +1,10 @@
 // src/components/Calculadoras/FormVerbasRescisorias.jsx
 import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import api from '../../services/api';
+import { ENDPOINTS } from '../../config/endpoints';
 
-const FormVerbasRescisorias = ({ onCalcular, loading }) => {
+const FormVerbasRescisorias = ({ loading }) => {
   const [dados, setDados] = useState({
     salario: '',
     data_admissao: '',
@@ -12,10 +15,8 @@ const FormVerbasRescisorias = ({ onCalcular, loading }) => {
     ferias_proporcionais: true,
     decimo_terceiro_proporcional: true
   });
-
   const [erros, setErros] = useState({});
-
-  // FUNÇÃO REMOVIDA - validarValorMonetario não estava sendo usada
+  const [resultado, setResultado] = useState(null);
 
   const tiposRescisao = [
     { value: 'sem_justa_causa', label: '🚫 Demissão sem Justa Causa', cor: '#dc3545' },
@@ -38,8 +39,6 @@ const FormVerbasRescisorias = ({ onCalcular, loading }) => {
     if (!dados.data_rescisao) {
       novosErros.data_rescisao = 'Informe a data de rescisão';
     }
-    
-    // Validar se data de rescisão é posterior à admissão
     if (dados.data_admissao && dados.data_rescisao) {
       const admissao = new Date(dados.data_admissao);
       const rescisao = new Date(dados.data_rescisao);
@@ -62,12 +61,7 @@ const FormVerbasRescisorias = ({ onCalcular, loading }) => {
       const meses = Math.floor((diffDays % 365) / 30);
       const dias = diffDays % 30;
       
-      return {
-        anos,
-        meses,
-        dias,
-        totalDias: diffDays
-      };
+      return { anos, meses, dias, totalDias: diffDays };
     }
     return null;
   };
@@ -87,14 +81,36 @@ const FormVerbasRescisorias = ({ onCalcular, loading }) => {
     setDados({...dados, salario: valorFormatado});
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validarFormulario()) {
-      const dadosParaCalcular = {
-        ...dados,
-        salario: parseFloat(dados.salario.replace(/[^\d,]/g, '').replace(',', '.'))
-      };
-      onCalcular(dadosParaCalcular);
+    if (!validarFormulario()) return;
+
+    const dadosParaCalcular = {
+      salario: parseFloat(dados.salario.replace(/[^\d,]/g, '').replace(',', '.')) || 0,
+      data_admissao: dados.data_admissao ? new Date(dados.data_admissao).toISOString().split('T')[0] : '',
+      data_rescisao: dados.data_rescisao ? new Date(dados.data_rescisao).toISOString().split('T')[0] : '',
+      tipo_rescisao: dados.tipo_rescisao,
+      aviso_previo_trabalhado: dados.aviso_previo_trabalhado,
+      ferias_vencidas: Number(dados.ferias_vencidas) || 0,
+      ferias_proporcionais: dados.ferias_proporcionais,
+      decimo_terceiro_proporcional: dados.decimo_terceiro_proporcional
+    };
+
+    try {
+      const response = await api.post(ENDPOINTS.calculadoras.verbas_rescisorias, dadosParaCalcular);
+      setResultado({
+        saldo_salario: response.data.saldo_salario || 0,
+        aviso_previo: response.data.aviso_previo || 0,
+        ferias_vencidas: response.data.ferias_vencidas || 0,
+        ferias_proporcionais: response.data.ferias_proporcionais || 0,
+        decimo_terceiro: response.data.decimo_terceiro || 0,
+        multa_fgts: response.data.multa_fgts || 0,
+        total: response.data.total || 0
+      });
+      toast.success('Cálculo realizado com sucesso!');
+    } catch (error) {
+      const msg = error.response?.data?.detail || 'Erro no cálculo: verifique os valores';
+      toast.error(msg);
     }
   };
 
@@ -109,7 +125,7 @@ const FormVerbasRescisorias = ({ onCalcular, loading }) => {
       padding: '30px'
     }}>
       <h3 style={{ color: '#495057', marginBottom: '25px', textAlign: 'center' }}>
-        �� Cálculo de Verbas Rescisórias
+        💼 Cálculo de Verbas Rescisórias
       </h3>
 
       <form onSubmit={handleSubmit}>
@@ -166,7 +182,7 @@ const FormVerbasRescisorias = ({ onCalcular, loading }) => {
 
           <div>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#495057' }}>
-              �� Data de Rescisão:
+              📅 Data de Rescisão:
             </label>
             <input
               type="date"
@@ -188,7 +204,6 @@ const FormVerbasRescisorias = ({ onCalcular, loading }) => {
           </div>
         </div>
 
-        {/* Tempo de Serviço */}
         {tempoServico && (
           <div style={{
             background: '#e8f5e8',
@@ -209,7 +224,6 @@ const FormVerbasRescisorias = ({ onCalcular, loading }) => {
           </div>
         )}
 
-        {/* Tipo de Rescisão */}
         <div style={{ marginBottom: '25px' }}>
           <label style={{ display: 'block', marginBottom: '12px', fontWeight: 'bold', color: '#495057' }}>
             ⚖️ Tipo de Rescisão:
@@ -242,7 +256,6 @@ const FormVerbasRescisorias = ({ onCalcular, loading }) => {
           </div>
         </div>
 
-        {/* Informações sobre o tipo selecionado */}
         {tipoSelecionado && (
           <div style={{
             background: `${tipoSelecionado.cor}15`,
@@ -252,7 +265,7 @@ const FormVerbasRescisorias = ({ onCalcular, loading }) => {
             border: `1px solid ${tipoSelecionado.cor}`
           }}>
             <h4 style={{ margin: '0 0 10px 0', color: tipoSelecionado.cor }}>
-              �� Informações sobre {tipoSelecionado.label}:
+              📋 Informações sobre {tipoSelecionado.label}:
             </h4>
             <div style={{ color: tipoSelecionado.cor, fontSize: '0.9em' }}>
               {dados.tipo_rescisao === 'sem_justa_causa' && (
@@ -291,7 +304,6 @@ const FormVerbasRescisorias = ({ onCalcular, loading }) => {
           </div>
         )}
 
-        {/* Opções Adicionais */}
         <div style={{
           background: '#f8f9fa',
           padding: '20px',
@@ -382,7 +394,29 @@ const FormVerbasRescisorias = ({ onCalcular, loading }) => {
           </div>
         </div>
 
-        {/* Informações Legais */}
+        {resultado && (
+          <div style={{
+            background: '#d4edda',
+            padding: '15px',
+            borderRadius: '8px',
+            marginBottom: '25px',
+            border: '1px solid #28a745'
+          }}>
+            <h4 style={{ margin: '0 0 10px 0', color: '#155724' }}>
+              📈 Resultado do Cálculo:
+            </h4>
+            <div style={{ color: '#155724', fontSize: '0.95em' }}>
+              <p style={{ margin: '5px 0' }}><strong>Saldo de Salário:</strong> R$ {resultado.saldo_salario.toFixed(2)}</p>
+              <p style={{ margin: '5px 0' }}><strong>Aviso Prévio:</strong> R$ {resultado.aviso_previo.toFixed(2)}</p>
+              <p style={{ margin: '5px 0' }}><strong>Férias Vencidas:</strong> R$ {resultado.ferias_vencidas.toFixed(2)}</p>
+              <p style={{ margin: '5px 0' }}><strong>Férias Proporcionais:</strong> R$ {resultado.ferias_proporcionais.toFixed(2)}</p>
+              <p style={{ margin: '5px 0' }}><strong>13º Salário Proporcional:</strong> R$ {resultado.decimo_terceiro.toFixed(2)}</p>
+              <p style={{ margin: '5px 0' }}><strong>Multa FGTS:</strong> R$ {resultado.multa_fgts.toFixed(2)}</p>
+              <p style={{ margin: '5px 0' }}><strong>Total:</strong> R$ {resultado.total.toFixed(2)}</p>
+            </div>
+          </div>
+        )}
+
         <div style={{
           background: '#e3f2fd',
           padding: '15px',

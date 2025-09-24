@@ -1,4 +1,3 @@
-// src/components/FormularioDinamico/ParecerJuridico.jsx
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
@@ -16,11 +15,13 @@ const ParecerJuridico = () => {
     setLoading(true);
     setParecer(null);
     try {
-      const data = await http.post(ENDPOINTS.ia.parecer_juridico, payload);
-      setParecer(data);
+      const response = await http.post(ENDPOINTS.ia.parecer_juridico, payload);
+      const parecerText = response.data?.parecer_juridico || 'Parecer não disponível';
+      setParecer({ texto: parecerText, dados_utilizados: payload });
       toast.success('Parecer gerado com sucesso.');
     } catch (err) {
-      toast.error(err?.message || 'Erro ao gerar parecer');
+      const msg = err.response?.data?.detail || err.message || 'Erro ao gerar parecer';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -205,7 +206,7 @@ const ParecerJuridico = () => {
             </h3>
             <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg max-h-96 overflow-y-auto">
               <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200">
-                {parecer.parecer || JSON.stringify(parecer, null, 2)}
+                {parecer.texto}
               </pre>
             </div>
           </div>

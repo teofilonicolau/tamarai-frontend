@@ -1,7 +1,8 @@
 // src/pages/Calculadoras.jsx
-// src/pages/Calculadoras.jsx
+
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import RegrasComparator from '../components/Calculadoras/RegrasComparator';
 import WizardPrevidenciario from '../components/Calculadoras/WizardPrevidenciario';
 import ResultadosDetalhados from '../components/Calculadoras/ResultadosDetalhados';
@@ -9,8 +10,6 @@ import ResultadosPrevidenciarios from '../components/Calculadoras/ResultadosPrev
 import ResultadosTrabalhistas from '../components/Calculadoras/ResultadosTrabalhistas';
 import ResultadosProcessuais from '../components/Calculadoras/ResultadosProcessuais';
 import ResultadosFinanceiros from '../components/Calculadoras/ResultadosFinanceiros';
-
-// 🧮 IMPORTAR FORMULÁRIOS EXISTENTES
 import FormTempoEspecial from '../components/Calculadoras/FormTempoEspecial';
 import FormPeriodoGraca from '../components/Calculadoras/FormPeriodoGraca';
 import FormRevisaoVidaToda from '../components/Calculadoras/FormRevisaoVidaToda';
@@ -22,20 +21,18 @@ import FormLiquidacaoSentenca from '../components/Calculadoras/FormLiquidacaoSen
 import FormPensaoAlimenticia from '../components/Calculadoras/FormPensaoAlimenticia';
 import FormJurosMora from '../components/Calculadoras/FormJurosMora';
 import FormCorrecaoMonetaria from '../components/Calculadoras/FormCorrecaoMonetaria';
-
 import api from '../services/api';
 
 const Calculadoras = () => {
   const location = useLocation();
   
-  // 🎯 DETERMINAR CATEGORIA INICIAL BASEADA NA URL
   const determinarCategoriaInicial = () => {
     const path = location.pathname;
     if (path.includes('/previdenciario')) return 'previdenciario';
     if (path.includes('/trabalhista')) return 'trabalhista';
     if (path.includes('/processual')) return 'processual';
     if (path.includes('/financeiro')) return 'financeiro';
-    return 'previdenciario'; // padrão
+    return 'previdenciario';
   };
 
   const [categoriaAtiva, setCategoriaAtiva] = useState(determinarCategoriaInicial());
@@ -45,7 +42,6 @@ const Calculadoras = () => {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(null);
 
-  // 📋 CONFIGURAÇÃO DAS CALCULADORAS POR CATEGORIA
   const calculadorasPorCategoria = {
     previdenciario: {
       nome: '⚖️ Previdenciário',
@@ -56,7 +52,7 @@ const Calculadoras = () => {
           nome: 'Regras de Transição EC 103/2019',
           descricao: 'Análise completa das 4 regras de transição',
           icone: '📊',
-          endpoint: '/api/v1/regra-transicao-ec103',  // ✅ CORRIGIDO
+          endpoint: '/api/v1/regra-transicao-ec103',
           componente: 'wizard',
           implementado: true
         },
@@ -65,7 +61,7 @@ const Calculadoras = () => {
           nome: 'Tempo Especial',
           descricao: 'Conversão de tempo especial em comum',
           icone: '⚡',
-          endpoint: '/api/v1/tempo-especial',  // ✅ CORRIGIDO
+          endpoint: '/api/v1/tempo-especial',
           componente: 'form',
           implementado: true
         },
@@ -74,7 +70,7 @@ const Calculadoras = () => {
           nome: 'Período de Graça',
           descricao: 'Cálculo do período de graça previdenciário',
           icone: '📅',
-          endpoint: '/api/v1/periodo-graca',  // ✅ CORRIGIDO
+          endpoint: '/api/v1/periodo-graca',
           componente: 'form',
           implementado: true
         },
@@ -83,7 +79,7 @@ const Calculadoras = () => {
           nome: 'Revisão da Vida Toda',
           descricao: 'Análise de viabilidade da revisão',
           icone: '🔄',
-          endpoint: '/api/v1/revisao-vida-toda',  // ✅ CORRIGIDO
+          endpoint: '/api/v1/revisao-vida-toda',
           componente: 'form',
           implementado: true
         }
@@ -98,7 +94,7 @@ const Calculadoras = () => {
           nome: 'Horas Extras',
           descricao: 'Cálculo de horas extras e reflexos',
           icone: '⏰',
-          endpoint: '/api/v1/horas-extras',  // ✅ CORRIGIDO
+          endpoint: '/api/v1/horas-extras',
           componente: 'form',
           implementado: true
         },
@@ -107,7 +103,7 @@ const Calculadoras = () => {
           nome: 'Verbas Rescisórias',
           descricao: 'Cálculo completo da rescisão',
           icone: '💼',
-          endpoint: '/api/v1/verbas-rescisorias',  // ✅ CORRIGIDO
+          endpoint: '/api/v1/verbas-rescisorias',
           componente: 'form',
           implementado: true
         },
@@ -116,7 +112,7 @@ const Calculadoras = () => {
           nome: 'Adicional Noturno',
           descricao: 'Cálculo do adicional noturno',
           icone: '🌙',
-          endpoint: '/api/v1/adicional-noturno',  // ✅ CORRIGIDO
+          endpoint: '/api/v1/adicional-noturno',
           componente: 'form',
           implementado: true
         }
@@ -131,7 +127,7 @@ const Calculadoras = () => {
           nome: 'Valor da Causa',
           descricao: 'Cálculo do valor da causa processual',
           icone: '💰',
-          endpoint: '/api/v1/valor-causa',  // ✅ CORRIGIDO
+          endpoint: '/api/v1/valor-causa',
           componente: 'form',
           implementado: true
         },
@@ -140,7 +136,7 @@ const Calculadoras = () => {
           nome: 'Liquidação de Sentença',
           descricao: 'Liquidação com juros e correção',
           icone: '📋',
-          endpoint: '/api/v1/liquidacao-sentenca',  // ✅ CORRIGIDO
+          endpoint: '/api/v1/liquidacao-sentenca',
           componente: 'form',
           implementado: true
         },
@@ -149,7 +145,7 @@ const Calculadoras = () => {
           nome: 'Pensão Alimentícia',
           descricao: 'Cálculo de pensão alimentícia',
           icone: '👨‍👩‍👧‍👦',
-          endpoint: '/api/v1/pensao-alimenticia',  // ✅ CORRIGIDO
+          endpoint: '/api/v1/pensao-alimenticia',
           componente: 'form',
           implementado: true
         }
@@ -164,7 +160,7 @@ const Calculadoras = () => {
           nome: 'Juros de Mora',
           descricao: 'Cálculo de juros moratórios',
           icone: '📈',
-          endpoint: '/api/v1/juros-mora',  // ✅ CORRIGIDO
+          endpoint: '/api/v1/juros-mora',
           componente: 'form',
           implementado: true
         },
@@ -173,7 +169,7 @@ const Calculadoras = () => {
           nome: 'Correção Monetária',
           descricao: 'Atualização monetária por índices',
           icone: '📊',
-          endpoint: '/api/v1/correcao-monetaria',  // ✅ CORRIGIDO
+          endpoint: '/api/v1/correcao-monetaria',
           componente: 'form',
           implementado: true
         }
@@ -181,38 +177,68 @@ const Calculadoras = () => {
     }
   };
 
-  // 🧮 FUNÇÃO PARA CALCULAR
+  const formatarDados = (dados) => {
+    const formatted = { ...dados };
+    // Formatar números e datas
+    Object.keys(formatted).forEach(key => {
+      if (typeof formatted[key] === 'string') {
+        // Limpar máscaras de CPF/CNPJ
+        if (key.includes('cpf') || key.includes('cnpj')) {
+          formatted[key] = formatted[key].replace(/\D/g, '');
+        }
+        // Converter datas para ISO (YYYY-MM-DD)
+        if (key.includes('data') || key.includes('der') || key.includes('vencimento')) {
+          try {
+            formatted[key] = new Date(formatted[key]).toISOString().split('T')[0];
+          } catch {
+            formatted[key] = '';
+          }
+        }
+        // Converter valores monetários para float
+        if (key.includes('valor') || key.includes('salario') || key.includes('renda')) {
+          formatted[key] = parseFloat(formatted[key]) || 0;
+        }
+        // Converter tempos/quantidades para int
+        if (key.includes('tempo') || key.includes('meses') || key.includes('idade')) {
+          formatted[key] = parseInt(formatted[key]) || 0;
+        }
+      }
+    });
+    return formatted;
+  };
+
   const calcular = async (dados) => {
     setLoading(true);
     setErro(null);
     setDadosEntrada(dados);
-    
+
     try {
       const calculadoraConfig = calculadorasPorCategoria[categoriaAtiva]
         .calculadoras.find(c => c.id === calculadoraAtiva);
       
+      const dadosFormatados = formatarDados(dados);
       console.log('🧮 Enviando dados para:', calculadoraConfig.endpoint);
-      console.log('📊 Dados:', dados);
+      console.log('📊 Dados:', dadosFormatados);
       
-      const response = await api.post(calculadoraConfig.endpoint, dados);
+      const response = await api.post(calculadoraConfig.endpoint, dadosFormatados);
       setResultados(response.data.resultado || response.data);
-      
+      toast.success('Cálculo realizado com sucesso!');
     } catch (error) {
+      const msg = error.response?.data?.detail || 'Erro ao calcular: verifique os dados inseridos.';
       console.error('❌ Erro no cálculo:', error);
-      setErro(`Erro ao calcular: ${error.response?.data?.detail || error.message}`);
+      setErro(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔄 FUNÇÃO PARA RESETAR
   const resetarCalculadora = () => {
     setResultados(null);
     setDadosEntrada(null);
     setErro(null);
   };
 
-  // 🎯 FUNÇÃO PARA RENDERIZAR FORMULÁRIO
   const renderizarFormulario = () => {
     const calculadoraConfig = calculadorasPorCategoria[categoriaAtiva]
       .calculadoras.find(c => c.id === calculadoraAtiva);
@@ -225,7 +251,6 @@ const Calculadoras = () => {
       );
     }
 
-    // 🧙‍♂️ WIZARD ESPECIAL PARA EC 103
     if (calculadoraAtiva === 'regra-transicao-ec103') {
       return (
         <WizardPrevidenciario 
@@ -235,7 +260,6 @@ const Calculadoras = () => {
       );
     }
 
-    // 📋 FORMULÁRIOS ESPECÍFICOS
     const FormularioComponent = {
       'tempo-especial': FormTempoEspecial,
       'periodo-graca': FormPeriodoGraca,
@@ -259,7 +283,6 @@ const Calculadoras = () => {
       );
     }
 
-    // 🚧 FORMULÁRIO EM DESENVOLVIMENTO
     return (
       <div style={{ textAlign: 'center', padding: '40px' }}>
         <div style={{ fontSize: '3em', marginBottom: '20px' }}>
@@ -298,11 +321,9 @@ const Calculadoras = () => {
     );
   };
 
-  // 🎯 FUNÇÃO PARA RENDERIZAR RESULTADOS
   const renderizarResultados = () => {
     if (!resultados) return null;
 
-    // 📊 RESULTADO ESPECIAL PARA EC 103
     if (calculadoraAtiva === 'regra-transicao-ec103') {
       return (
         <>
@@ -315,7 +336,6 @@ const Calculadoras = () => {
       );
     }
 
-    // 📋 RESULTADOS POR CATEGORIA
     const ComponenteResultado = {
       previdenciario: ResultadosPrevidenciarios,
       trabalhista: ResultadosTrabalhistas,
@@ -333,7 +353,6 @@ const Calculadoras = () => {
       );
     }
 
-    // 📊 RESULTADO GENÉRICO
     return (
       <div style={{
         background: 'white',
@@ -365,8 +384,6 @@ const Calculadoras = () => {
       padding: '20px',
       minHeight: '100vh'
     }}>
-      
-      {/* 🏗️ HEADER PRINCIPAL */}
       <div style={{ 
         textAlign: 'center', 
         marginBottom: '40px',
@@ -383,7 +400,6 @@ const Calculadoras = () => {
         </p>
       </div>
 
-      {/* 🎯 NAVEGAÇÃO POR CATEGORIAS */}
       <div style={{ 
         display: 'flex', 
         gap: '10px', 
@@ -416,7 +432,6 @@ const Calculadoras = () => {
         ))}
       </div>
 
-      {/* 🧮 NAVEGAÇÃO POR CALCULADORAS */}
       <div style={{ 
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -441,7 +456,6 @@ const Calculadoras = () => {
               position: 'relative'
             }}
           >
-            {/* 🏷️ BADGE DE STATUS */}
             <div style={{
               position: 'absolute',
               top: '10px',
@@ -483,15 +497,12 @@ const Calculadoras = () => {
         ))}
       </div>
 
-      {/* 🧮 ÁREA DE CÁLCULO */}
       <div style={{
         background: 'white',
         borderRadius: '12px',
         border: '1px solid #dee2e6',
         overflow: 'hidden'
       }}>
-        
-        {/* 🏷️ HEADER DA CALCULADORA ATIVA */}
         <div style={{
           background: calculadorasPorCategoria[categoriaAtiva].cor,
           color: 'white',
@@ -506,13 +517,11 @@ const Calculadoras = () => {
           </p>
         </div>
 
-        {/* 📋 CONTEÚDO DA CALCULADORA */}
         <div style={{ padding: '30px' }}>
           {renderizarFormulario()}
         </div>
       </div>
 
-      {/* ❌ EXIBIÇÃO DE ERRO */}
       {erro && (
         <div style={{
           background: '#f8d7da',
@@ -526,7 +535,6 @@ const Calculadoras = () => {
         </div>
       )}
 
-      {/* ⏳ LOADING */}
       {loading && (
         <div style={{
           textAlign: 'center',
@@ -542,7 +550,6 @@ const Calculadoras = () => {
         </div>
       )}
 
-      {/* 📊 RESULTADOS */}
       {resultados && !loading && (
         <div style={{ marginTop: '30px' }}>
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -565,7 +572,6 @@ const Calculadoras = () => {
         </div>
       )}
 
-      {/* 📋 FOOTER INFORMATIVO */}
       <div style={{
         marginTop: '40px',
         padding: '20px',
@@ -585,3 +591,4 @@ const Calculadoras = () => {
 };
 
 export default Calculadoras;
+
