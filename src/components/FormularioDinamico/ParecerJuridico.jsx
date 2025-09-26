@@ -1,22 +1,25 @@
-import React, { useState } from 'react';
+
+import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import { ENDPOINTS } from '../../config/endpoints';
 import { http } from '../../services/api';
-import { extractPayload } from '../../utils/payload';
+import { extractPayload, normalizePayload } from '../../utils/payload';
+import jsPDF from 'jspdf';
 
 const ParecerJuridico = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
   const [loading, setLoading] = useState(false);
   const [parecer, setParecer] = useState(null);
+  const previewRef = useRef(null);
 
   const onSubmit = async (formValues) => {
-    const payload = extractPayload(formValues);
+    const payload = normalizePayload(extractPayload(formValues));
     setLoading(true);
     setParecer(null);
     try {
-      const response = await http.post(ENDPOINTS.ia.parecer_juridico, payload);
-      const parecerText = response.data?.parecer_juridico || 'Parecer não disponível';
+      const response = await http.post(ENDPOINTS.ai.parecer, payload);
+      const parecerText = response.data?.parecer_juridico || response.data?.parecer || 'Parecer não disponível';
       setParecer({ texto: parecerText, dados_utilizados: payload });
       toast.success('Parecer gerado com sucesso.');
     } catch (err) {
@@ -27,176 +30,110 @@ const ParecerJuridico = () => {
     }
   };
 
-  const gerarPDF = async () => {
-    if (!parecer?.dados_utilizados) {
-      toast.error('Nenhum parecer carregado para gerar PDF');
+  const gerarPDF = () => {
+    if (!parecer?.texto) {
+      toast.error('Nenhum parecer gerado para exportar.');
       return;
     }
+    const doc = new jsPDF();
+    doc.setFontSize(12);
+    doc.text('Parecer Jurídico', 10, 10);
+    doc.text(parecer.texto, 10, 20, { maxWidth: 190 });
+    doc.save('parecer-juridico.pdf');
+    toast.success('PDF gerado com sucesso!');
+  };
 
-    try {
-      const response = await http.post(
-        `${ENDPOINTS.ia.parecer_juridico}/pdf`, 
-        parecer.dados_utilizados, 
-        { responseType: 'blob' }
-      );
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `parecer_juridico_${Date.now()}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      
-      toast.success('PDF baixado com sucesso!');
-    } catch (err) {
-      toast.error(err?.message || 'Erro ao gerar PDF');
+  const copiarTexto = () => {
+    if (previewRef.current) {
+      navigator.clipboard.writeText(previewRef.current.innerText);
+      toast.success('Texto copiado!');
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="theme-card p-6">
-        
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            📋 Parecer Jurídico com IA
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Gere pareceres jurídicos estruturados e fundamentados
-          </p>
-        </div>
-
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="theme-card p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          📜 Gerar Parecer Jurídico
+        </h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Título do Parecer *
-            </label>
-            <input
-              {...register('titulo', { required: 'Título é obrigatório' })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="Ex: Parecer sobre Aposentadoria Especial"
-            />
-            {errors.titulo && (
-              <p className="text-red-600 text-sm mt-1">{errors.titulo.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Conteúdo/Questão a Analisar *
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Pergunta ou Dúvida Jurídica
             </label>
             <textarea
-              {...register('conteudo', { required: 'Conteúdo é obrigatório' })}
-              rows={6}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="Descreva a situação jurídica que precisa de parecer..."
+              {...register('pergunta', { required: 'A pergunta é obrigatória' })}
+              className={`mt-1 block w-full p-3 border rounded-lg ${
+                errors.pergunta ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+              } bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-200`}
+              placeholder="Descreva a dúvida jurídica ou questão a ser analisada"
+              rows="5"
             />
-            {errors.conteudo && (
-              <p className="text-red-600 text-sm mt-1">{errors.conteudo.message}</p>
+            {errors.pergunta && (
+              <p className="mt-1 text-sm text-red-600">{errors.pergunta.message}</p>
             )}
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Área do Direito
-              </label>
-              <select
-                {...register('area')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="geral">Geral</option>
-                <option value="previdenciario">Previdenciário</option>
-                <option value="trabalhista">Trabalhista</option>
-                <option value="civil">Civil</option>
-                <option value="consumidor">Consumidor</option>
-                <option value="processual_civil">Processual Civil</option>
-              </select>
-            </div>
-
-            <div className="flex items-center">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  {...register('incluir_jurisprudencia')}
-                  defaultChecked={true}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Incluir Jurisprudência
-                </span>
-              </label>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Nome do Escritório
-              </label>
-              <input
-                {...register('firm_name')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="Nome do escritório"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Nome do Advogado
-              </label>
-              <input
-                {...register('lawyer_name')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="Nome do advogado"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Texto da Assinatura
-              </label>
-              <input
-                {...register('signature_text')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="Ex: Dr. João Silva - OAB/SP 123456"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Persona da IA
-              </label>
-              <input
-                {...register('ai_persona')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="Ex: Especialista em Direito Previdenciário com 15 anos de experiência"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Área do Direito
+            </label>
+            <input
+              {...register('area_direito', { required: 'A área do direito é obrigatória' })}
+              className={`mt-1 block w-full p-3 border rounded-lg ${
+                errors.area_direito ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+              } bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-200`}
+              placeholder="Ex.: Direito Civil, Trabalhista, Consumidor"
+            />
+            {errors.area_direito && (
+              <p className="mt-1 text-sm text-red-600">{errors.area_direito.message}</p>
+            )}
           </div>
-
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Contexto do Caso
+            </label>
+            <textarea
+              {...register('contexto', { required: 'O contexto do caso é obrigatório' })}
+              className={`mt-1 block w-full p-3 border rounded-lg ${
+                errors.contexto ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+              } bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-200`}
+              placeholder="Descreva o contexto ou fatos relevantes do caso"
+              rows="5"
+            />
+            {errors.contexto && (
+              <p className="mt-1 text-sm text-red-600">{errors.contexto.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Documentos ou Provas (um por linha, opcional)
+            </label>
+            <textarea
+              {...register('documentos')}
+              className="mt-1 block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+              placeholder="Ex.: Contrato\nE-mails\nNotas fiscais"
+              rows="4"
+            />
+          </div>
           <div className="flex space-x-4">
             <button
               type="submit"
               disabled={loading}
-              className="theme-button flex-1"
-              style={{ background: '#8B5CF6' }}
+              className={`flex-1 py-3 px-4 rounded-lg text-white font-medium ${
+                loading ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
-              {loading ? 'Gerando...' : '📋 Gerar Parecer'}
+              {loading ? '⏳ Gerando...' : 'Gerar Parecer'}
             </button>
-
-            {parecer && (
-              <button
-                type="button"
-                onClick={gerarPDF}
-                className="theme-button"
-                style={{ background: '#10B981' }}
-              >
-                📥 Baixar PDF
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => reset()}
+              disabled={loading}
+              className="flex-1 py-3 px-4 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700"
+            >
+              Limpar Formulário
+            </button>
           </div>
-
         </form>
 
         {parecer && (
@@ -204,14 +141,27 @@ const ParecerJuridico = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               📋 Parecer Gerado
             </h3>
-            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg max-h-96 overflow-y-auto">
+            <div ref={previewRef} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
               <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200">
                 {parecer.texto}
               </pre>
             </div>
+            <div className="mt-4 flex space-x-4">
+              <button
+                onClick={copiarTexto}
+                className="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Copiar Texto
+              </button>
+              <button
+                onClick={gerarPDF}
+                className="py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Gerar PDF
+              </button>
+            </div>
           </div>
         )}
-
       </div>
     </div>
   );

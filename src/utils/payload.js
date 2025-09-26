@@ -1,55 +1,45 @@
+export const normalizePayload = (data) => {
+  const result = {};
 
-const isEmpty = (v) =>
-  v === undefined ||
-  v === null ||
-  (typeof v === 'string' && v.trim() === '') ||
-  (Array.isArray(v) && v.length === 0);
-
-const cleanEmpty = (obj) => {
-  const out = {};
-  Object.entries(obj || {}).forEach(([k, v]) => {
-    if (!isEmpty(v)) out[k] = v;
-  });
-  return out;
-};
-
-// Converte "1.234,56" -> 1234.56; "R$ 1.234,56" -> 1234.56
-const parsePtBrNumber = (val) => {
-  if (typeof val !== 'string') return val;
-  const s = val
-    .replace(/\s+/g, '')
-    .replace(/R\$\s?/gi, '')
-    .replace(/\./g, '')
-    .replace(/,/g, '.');
-  const n = Number(s);
-  return Number.isFinite(n) ? n : val;
-};
-
-export const normalizePayload = (payload) => {
-  if (!payload || typeof payload !== 'object') return payload;
-  const cleaned = cleanEmpty(payload);
-  const normalized = {};
-
-  for (const [key, value] of Object.entries(cleaned)) {
+  Object.entries(data).forEach(([key, value]) => {
     if (typeof value === 'string') {
-      // Normaliza números com vírgula
-      if (/[0-9]+[,.][0-9]+/.test(value) || /R\$\s*/i.test(value)) {
-        normalized[key] = parsePtBrNumber(value);
-      } else {
-        normalized[key] = value.trim();
+      // Remove máscaras de CPF/CNPJ
+      if (key.includes('cpf') || key.includes('cnpj')) {
+        result[key] = value.replace(/\D/g, '');
       }
-    } else if (Array.isArray(value)) {
-      normalized[key] = value;
-    } else if (value && typeof value === 'object') {
-      normalized[key] = normalizePayload(value);
-    } else {
-      normalized[key] = value;
+      // Converte datas para ISO (YYYY-MM-DD)
+      else if (key.includes('data_') || key.includes('periodo_')) {
+        result[key] = value ? new Date(value).toISOString().split('T')[0] : '';
+      }
+      // Trata strings vazias como null
+      else {
+        result[key] = value.trim() === '' ? null : value.trim();
+      }
     }
-  }
-  return normalized;
+    // Converte números
+    else if (typeof value === 'number') {
+      result[key] = isNaN(value) ? 0 : value;
+    }
+    // Mantém booleanos
+    else if (typeof value === 'boolean') {
+      result[key] = value;
+    }
+    // Processa arrays
+    else if (Array.isArray(value)) {
+      result[key] = value.map(item => item.trim()).filter(item => item);
+    }
+    // Mantém outros tipos (ex.: null, undefined)
+    else {
+      result[key] = value;
+    }
+  });
+
+  return result;
 };
 
-// Ajuda a extrair apenas campos relevantes (ex.: react-hook-form values)
-export const extractPayload = (data) => normalizePayload({ ...data });
-
-export default { normalizePayload, extractPayload };
+export const extractPayload = (data) => {
+  // Função para extrair apenas campos preenchidos (remove undefined/null)
+  return Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined && value !== null && value !== '')
+  );
+};

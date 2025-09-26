@@ -1,45 +1,52 @@
 // src/components/FormularioDinamico/AnaliseTexto.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
 import { ENDPOINTS } from '../../config/endpoints';
+import { normalizePayload } from '../../utils/payload';
 
 const AnaliseTexto = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
     defaultValues: {
       tipo_analise: 'analise_juridica'
     }
   });
   const [loading, setLoading] = useState(false);
   const [analise, setAnalise] = useState(null);
+  const previewRef = useRef(null);
 
   const onSubmit = async (data) => {
     setLoading(true);
+    setAnalise(null);
     try {
-      const cleanedData = {
-        texto_original: data.texto.trim(),
+      const cleanedData = normalizePayload({
+        texto: data.texto.trim(),
         tipo_analise: data.tipo_analise,
-        nome_escritorio: data.firm_name || '',
-        nome_advogado: data.lawyer_name || '',
-        persona_ia: data.ai_persona || ''
-      };
+        firm_name: data.firm_name || '',
+        lawyer_name: data.lawyer_name || '',
+        ai_persona: data.ai_persona || ''
+      });
 
-      if (!cleanedData.texto_original) {
-        throw new Error('Texto é obrigatório');
-      }
-      if (!cleanedData.tipo_analise) {
-        throw new Error('Tipo de análise é obrigatório');
-      }
+      if (!cleanedData.texto) throw new Error('Texto é obrigatório');
+      if (!cleanedData.tipo_analise) throw new Error('Tipo de análise é obrigatório');
 
       const response = await api.post(ENDPOINTS.ai.analise, cleanedData);
-      setAnalise(response.data);
+      const analiseText = response.data?.analise || response.data?.resultado || 'Análise não disponível';
+      setAnalise({ texto: analiseText });
       toast.success('Análise realizada com sucesso!');
     } catch (error) {
       const msg = error.response?.data?.detail || error.message || 'Erro ao analisar texto. Verifique os dados.';
       toast.error(msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const copiarTexto = () => {
+    if (previewRef.current) {
+      navigator.clipboard.writeText(previewRef.current.innerText);
+      toast.success('Texto copiado!');
     }
   };
 
@@ -119,7 +126,7 @@ const AnaliseTexto = () => {
               <input
                 {...register('ai_persona')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="Ex: Analista Jurídico Especializado"
+                placeholder="Ex: Analista Jurídico Especializado em contratos civis e previdenciários"
               />
             </div>
           </div>
@@ -131,6 +138,9 @@ const AnaliseTexto = () => {
           >
             {loading ? 'Analisando...' : '📄 Analisar Texto'}
           </button>
+          <button type="button" onClick={() => reset()} disabled={loading} className="w-full mt-2 bg-red-600 text-white py-3 px-6 rounded-lg">
+            Limpar Formulário
+          </button>
         </form>
 
         {analise && (
@@ -138,11 +148,14 @@ const AnaliseTexto = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               📋 Resultado da Análise
             </h3>
-            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <div ref={previewRef} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
               <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200">
-                {analise.analise || JSON.stringify(analise, null, 2)}
+                {analise.texto}
               </pre>
             </div>
+            <button onClick={copiarTexto} className="mt-4 bg-blue-600 text-white py-2 px-4 rounded">
+              Copiar Texto
+            </button>
           </div>
         )}
       </div>

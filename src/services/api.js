@@ -4,7 +4,7 @@ const baseURL = import.meta.env.VITE_API_URL?.replace(/\/+$/, '') || '';
 
 const api = axios.create({
   baseURL,
-  timeout: 20000,
+  timeout: 60000,  // Aumentado para 60s para chamadas IA
   withCredentials: false,
 });
 
@@ -58,6 +58,7 @@ api.interceptors.response.use(
     }
 
     if (data?.message) message = data.message;
+    if (data?.detail) message = data.detail;  // Adicionado para capturar 'detail' do backend
 
     return Promise.reject({ status, message, data });
   },
