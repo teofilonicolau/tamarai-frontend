@@ -44,7 +44,7 @@
   // Tailwind CSS Settings
   "tailwindCSS.experimental.classRegex": [
     ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
-    ["classnames\\(([^)]*)\\)", "'([^']*)'"]
+    ["classnames\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
   "css.validate": false,
   
@@ -53,9 +53,6 @@
     "**/node_modules": true,
     "**/dist": true,
     "**/.git": true
-  },
-  "files.associations": {
-    "*.css": "tailwindcss"
   },
   
   // Prettier Settings
