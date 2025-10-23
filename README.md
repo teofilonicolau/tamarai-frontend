@@ -54,6 +54,7 @@ A plataforma foi desenvolvida para advogados e profissionais do direito que busc
 - **[ESLint 9.9.1](https://eslint.org/)** - Ferramenta de linting para identificar problemas no código
 - **[Prettier](https://prettier.io/)** - Formatador de código para manter consistência
 - **[@vitejs/plugin-react 4.3.1](https://github.com/vitejs/vite-plugin-react)** - Plugin oficial do Vite para React
+- **[GitHub Copilot](https://github.com/features/copilot)** - Assistente de IA para desenvolvimento ([Veja o guia](COPILOT.md))
 
 ## 🏗️ Arquitetura do Projeto
 
@@ -215,6 +216,28 @@ src/
    # ou
    yarn preview
    ```
+
+## 🤖 Ferramentas para Desenvolvedores
+
+### **GitHub Copilot - Assistente de IA para Código**
+
+Este projeto suporta e recomenda o uso do **GitHub Copilot** para aumentar a produtividade no desenvolvimento. O Copilot é um assistente de codificação alimentado por IA que ajuda você a escrever código mais rápido e com menos esforço.
+
+**📖 [Leia o Guia Completo de Uso do GitHub Copilot](COPILOT.md)**
+
+O guia inclui:
+- ✅ Passo a passo de instalação e configuração no VS Code
+- ✅ Como usar sugestões automáticas e o chat do Copilot
+- ✅ Melhores práticas específicas para este projeto
+- ✅ Dicas para desenvolvimento React com Copilot
+- ✅ Comandos úteis e solução de problemas
+- ✅ Exemplos práticos de uso
+
+**Benefícios para o Projeto:**
+- ⚡ Escreva componentes React mais rapidamente
+- 🎯 Sugestões contextualizadas baseadas no código existente
+- 📚 Aprenda melhores práticas enquanto desenvolve
+- 🔧 Facilita refatoração e manutenção do código
 
 ## 📱 Como Usar
 
