@@ -19,7 +19,7 @@ const FormTempoEspecial = () => {
     if (!dataInicioEspecial) {
       novosErros.data_inicio_especial = 'Informe a data de início especial';
     }
-    if (!tempoEspecial || parseInt(tempoEspecial) <= 0) {
+    if (!tempoEspecial || parseInt(tempoEspecial, 10) <= 0) {
       novosErros.tempo_especial = 'Informe o tempo especial (meses)';
     }
 
@@ -33,24 +33,60 @@ const FormTempoEspecial = () => {
 
     const dados = {
       data_inicio_especial: dataInicioEspecial ? new Date(dataInicioEspecial).toISOString().split('T')[0] : '',
-      tempo_especial: parseInt(tempoEspecial) || 0,
-      tempo_rural: parseInt(tempoRural) || 0,
-      tempo_urbano: parseInt(tempoUrbano) || 0,
+      tempo_especial: parseInt(tempoEspecial, 10) || 0,
+      tempo_rural: parseInt(tempoRural, 10) || 0,
+      tempo_urbano: parseInt(tempoUrbano, 10) || 0,
     };
 
     setLoading(true);
     setResultado(null);
     try {
-      const response = await api.post(ENDPOINTS.calculadoras.tempo_especial, dados);
+      const endpoint = ENDPOINTS.calculadoras.previdenciario.tempo_especial;
+      console.debug('Enviando para endpoint:', endpoint, 'dados:', dados);
+
+      const response = await api.post(endpoint, dados);
+      console.debug('Resposta completa do backend (tempo-especial):', response?.data);
+
+      // O backend retorna { calculo: { ... }, uso: "...", status: "sucesso" }
+      const calculo = response?.data?.calculo ?? {};
+
+      // Campos úteis do calculo
+      const tempo_rural_meses = calculo.tempo_rural_meses ?? 0;
+      const tempo_urbano_meses = calculo.tempo_urbano_meses ?? 0;
+      const tempo_especial_meses = calculo.tempo_especial_meses ?? 0;
+
+      const total_homem = calculo.total_homem ?? 0;
+      const total_mulher = calculo.total_mulher ?? 0;
+
+      const total_formatado_homem = calculo.total_formatado_homem ?? `${total_homem} meses`;
+      const total_formatado_mulher = calculo.total_formatado_mulher ?? `${total_mulher} meses`;
+      const tempo_especial_formatado = calculo.tempo_especial_formatado ?? `${tempo_especial_meses} meses`;
+
+      const periodo_exposicao_formatado = calculo.periodo_exposicao_formatado ?? `${calculo.periodo_exposicao_meses ?? 0} meses`;
+
+      const validacao = calculo.validacao ?? {};
+      const alertas = Array.isArray(validacao.alertas) ? validacao.alertas : [];
+
       setResultado({
-        tempo_total: response.data.tempo_total || 0,
-        elegibilidade: response.data.elegibilidade || 'Não informado',
-        detalhes: response.data.detalhes || ''
+        tempo_rural_meses,
+        tempo_urbano_meses,
+        tempo_especial_meses,
+        total_homem,
+        total_mulher,
+        total_formatado_homem,
+        total_formatado_mulher,
+        tempo_especial_formatado,
+        periodo_exposicao_formatado,
+        validacao,
+        alertas,
       });
+
       toast.success('Cálculo realizado com sucesso!');
     } catch (error) {
-      const msg = error.response?.data?.detail || 'Erro no cálculo: verifique os valores';
+      // Normaliza a mensagem de erro para exibir pro usuário
+      const msg = error?.response?.data?.detail || error?.message || 'Erro no cálculo: verifique os valores';
       toast.error(msg);
+      console.error('Erro Tempo Especial:', error?.response ?? error);
     } finally {
       setLoading(false);
     }
@@ -168,15 +204,25 @@ const FormTempoEspecial = () => {
             </h4>
             <div style={{ color: '#155724', fontSize: '0.95em' }}>
               <p style={{ margin: '5px 0' }}>
-                <strong>Tempo Total (meses):</strong> {resultado.tempo_total}
+                <strong>Tempo Especial (formatado):</strong> {resultado.tempo_especial_formatado}
               </p>
               <p style={{ margin: '5px 0' }}>
-                <strong>Elegibilidade:</strong> {resultado.elegibilidade}
+                <strong>Tempo Total (homem):</strong> {resultado.total_formatado_homem}
               </p>
-              {resultado.detalhes && (
-                <p style={{ margin: '5px 0' }}>
-                  <strong>Detalhes:</strong> {resultado.detalhes}
-                </p>
+              <p style={{ margin: '5px 0' }}>
+                <strong>Tempo Total (mulher):</strong> {resultado.total_formatado_mulher}
+              </p>
+              <p style={{ margin: '5px 0' }}>
+                <strong>Período de Exposição:</strong> {resultado.periodo_exposicao_formatado}
+              </p>
+
+              {resultado.alertas && resultado.alertas.length > 0 && (
+                <div style={{ marginTop: '10px' }}>
+                  <strong>Atenção / Alertas:</strong>
+                  <ul style={{ marginTop: '6px', color: '#856404' }}>
+                    {resultado.alertas.map((a, i) => <li key={i}>{a}</li>)}
+                  </ul>
+                </div>
               )}
             </div>
           </div>

@@ -1,10 +1,15 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL?.replace(/\/+$/, '') || '';
+// Try multiple env vars for compatibility and provide sensible dev default
+const baseURL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''));
 
+// Trim trailing slashes if any
+const normalizedBaseURL = baseURL ? baseURL.replace(/\/+$/, '') : '';
+
+// Create axios instance
 const api = axios.create({
-  baseURL,
-  timeout: 60000,  // Aumentado para 60s para chamadas IA
+  baseURL: normalizedBaseURL,
+  timeout: 60000,
   withCredentials: false,
 });
 
@@ -28,6 +33,11 @@ api.interceptors.request.use(
       config.headers.Accept = 'application/json, text/plain, */*';
     }
 
+    if (import.meta.env.DEV) {
+      const dataForLog = config.data ? JSON.parse(JSON.stringify(config.data)) : null;
+      console.debug('[API REQUEST]', config.method?.toUpperCase(), config.baseURL || '', config.url, 'params:', config.params || {}, 'body:', dataForLog);
+    }
+
     return config;
   },
   (error) => Promise.reject(error),
@@ -36,50 +46,44 @@ api.interceptors.request.use(
 // Interceptor de resposta
 api.interceptors.response.use(
   (response) => {
-    const ct = (response.headers?.['content-type'] || '').toLowerCase();
+    if (import.meta.env.DEV) console.debug('[API RESPONSE]', response.status, response.config.url, response.data);
 
-    // text/plain => normaliza para objeto { message }
+    const ct = (response.headers?.['content-type'] || '').toLowerCase();
     if (typeof response.data === 'string' && ct.includes('text/plain')) {
       return { ...response, data: { message: response.data } };
     }
-
     return response;
   },
   (error) => {
-    // Normalização de erro
+    if (import.meta.env.DEV) {
+      console.error('[API ERROR]', error?.response?.status, error?.config?.url, error?.response?.data || error.message);
+    }
+
     const status = error?.response?.status || 0;
     const ct = (error?.response?.headers?.['content-type'] || '').toLowerCase();
     let message = error?.message || 'Erro na requisição';
     let data = error?.response?.data;
 
-    // text/plain no erro => trata como mensagem
     if (typeof data === 'string' && ct.includes('text/plain')) {
       data = { message: data };
     }
 
     if (data?.message) message = data.message;
-    if (data?.detail) message = data.detail;  // Adicionado para capturar 'detail' do backend
+    if (data?.detail) message = data.detail;
 
     return Promise.reject({ status, message, data });
   },
 );
 
-// Helpers
+// Helpers que retornam apenas response.data para simplificar uso
 export const http = {
   get: (url, config) => api.get(url, config).then((r) => r.data),
   post: (url, body, config) => api.post(url, body, config).then((r) => r.data),
   put: (url, body, config) => api.put(url, body, config).then((r) => r.data),
   del: (url, config) => api.delete(url, config).then((r) => r.data),
 
-  // Para downloads (PDF, planilhas etc.)
   downloadBlob: async (url, body, filename, method = 'post') => {
-    const res = await api.request({
-      url,
-      method,
-      data: body,
-      responseType: 'blob',
-    });
-
+    const res = await api.request({ url, method, data: body, responseType: 'blob' });
     const blob = new Blob([res.data], { type: res.data.type || 'application/pdf' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);

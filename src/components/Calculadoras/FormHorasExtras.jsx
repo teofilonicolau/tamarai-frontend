@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import api from '../../services/api';
+import { http } from '../../services/api';
 import { ENDPOINTS } from '../../config/endpoints';
 
 const FormHorasExtras = () => {
@@ -72,15 +72,27 @@ const FormHorasExtras = () => {
     setLoading(true);
     setResultado(null);
     try {
-      const response = await api.post(ENDPOINTS.calculadoras.horas_extras, dadosParaCalcular);
+      const endpoint = ENDPOINTS.calculadoras.trabalhista.horas_extras;
+      console.debug('Enviando para endpoint:', endpoint, 'dados:', dadosParaCalcular);
+
+      const response = await http.post(endpoint, dadosParaCalcular);
+      const calculo = response?.calculo ?? {};
+
+      // backend fornece horas_extras_diarias (horas extras por dia) e valor_total
+      const horasExtrasDiarias = calculo.horas_extras_diarias ?? calculo.horas_extras ?? 0;
+      const dias = dadosParaCalcular.dias_trabalhados ?? 0;
+      const horasExtrasTotais = horasExtrasDiarias * dias;
+
       setResultado({
-        horasExtras: response.data.horas_extras || 0,
-        valorTotal: response.data.valor_total || 0,
-        percentualAplicado: response.data.percentual_adicional || parseFloat(dados.percentual_adicional)
+        horasExtras: horasExtrasTotais,
+        valorTotal: calculo.valor_total ?? calculo.valorTotal ?? 0,
+        percentualAplicado: calculo.percentual_adicional ?? dadosParaCalcular.percentual_adicional
       });
+
       toast.success('Cálculo realizado com sucesso!');
     } catch (error) {
-      const msg = error.response?.data?.detail || 'Erro no cálculo: verifique os valores';
+      const msg = error?.message || error?.data?.detail || 'Erro no cálculo: verifique os valores';
+      console.error('Erro Horas Extras:', error);
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -271,7 +283,7 @@ const FormHorasExtras = () => {
                 <strong>Horas extras totais:</strong> {resultado.horasExtras} horas
               </p>
               <p style={{ margin: '5px 0' }}>
-                <strong>Valor total:</strong> R$ {resultado.valorTotal.toFixed(2)}
+                <strong>Valor total:</strong> R$ {Number(resultado.valorTotal).toFixed(2)}
               </p>
               <p style={{ margin: '5px 0', fontSize: '0.9em', fontStyle: 'italic' }}>
                 📌 Adicional de {resultado.percentualAplicado}% aplicado

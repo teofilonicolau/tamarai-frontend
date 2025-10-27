@@ -1,5 +1,6 @@
 // src/components/Calculadoras/FormRevisaoVidaToda.jsx
 import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 const FormRevisaoVidaToda = ({ onCalcular, loading }) => {
   const [dados, setDados] = useState({
@@ -78,9 +79,32 @@ const FormRevisaoVidaToda = ({ onCalcular, loading }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validarFormulario()) {
-      onCalcular(dados);
+
+    // DEBUG: mostrar os dados antes de validar
+    console.debug('Tentativa de envio — dados:', dados);
+
+    if (!validarFormulario()) {
+      // Mostrar toasts com os erros para feedback rápido ao usuário
+      const msgs = Object.values(erros);
+      if (msgs.length === 0) {
+        // se setErros ainda não atualizou sincronamente, recompute para exibir
+        const novos = {};
+        if (dados.salarios_antes_1994.length === 0) novos.salarios_antes_1994 = 'Adicione pelo menos um salário anterior a 1994';
+        if (dados.salarios_depois_1994.length === 0) novos.salarios_depois_1994 = 'Adicione pelo menos um salário posterior a 1994';
+        if (!dados.data_dib) novos.data_dib = 'Informe a data do DIB (Data de Início do Benefício)';
+        Object.values(novos).forEach(m => toast.error(m));
+      } else {
+        msgs.forEach(m => toast.error(m));
+      }
+
+      // Para debugging adicional, logue o estado detalhado
+      console.debug('Validação falhou — erros:', { ...erros, salarios_antes_1994: dados.salarios_antes_1994.length, salarios_depois_1994: dados.salarios_depois_1994.length, data_dib: dados.data_dib });
+      return;
     }
+
+    // Se passou na validação, chama o callback pai que fará o POST
+    console.debug('Validação OK — enviando dados para onCalcular');
+    onCalcular(dados);
   };
 
   const previa = calcularPrevia();
@@ -93,7 +117,7 @@ const FormRevisaoVidaToda = ({ onCalcular, loading }) => {
       padding: '30px'
     }}>
       <h3 style={{ color: '#495057', marginBottom: '25px', textAlign: 'center' }}>
-        �� Revisão da Vida Toda
+        Revisão da Vida Toda
       </h3>
 
       <form onSubmit={handleSubmit}>
@@ -113,7 +137,7 @@ const FormRevisaoVidaToda = ({ onCalcular, loading }) => {
               style={{
                 flex: 1,
                 padding: '12px',
-                border: '2px solid #dee2e6',
+                border: `2px solid ${erros.salarios_antes_1994 ? '#dc3545' : '#dee2e6'}`,
                 borderRadius: '8px',
                 fontSize: '1em'
               }}
@@ -146,7 +170,7 @@ const FormRevisaoVidaToda = ({ onCalcular, loading }) => {
                 alignItems: 'center',
                 gap: '8px'
               }}>
-                <span>R\$ {salario.toFixed(2)}</span>
+                <span>R$ {salario.toFixed(2)}</span>
                 <button
                   type="button"
                   onClick={() => removerSalarioAntes(index)}
@@ -187,7 +211,7 @@ const FormRevisaoVidaToda = ({ onCalcular, loading }) => {
               style={{
                 flex: 1,
                 padding: '12px',
-                border: '2px solid #dee2e6',
+                border: `2px solid ${erros.salarios_depois_1994 ? '#dc3545' : '#dee2e6'}`,
                 borderRadius: '8px',
                 fontSize: '1em'
               }}
@@ -220,7 +244,7 @@ const FormRevisaoVidaToda = ({ onCalcular, loading }) => {
                 alignItems: 'center',
                 gap: '8px'
               }}>
-                <span>R\$ {salario.toFixed(2)}</span>
+                <span>R$ {salario.toFixed(2)}</span>
                 <button
                   type="button"
                   onClick={() => removerSalarioDepois(index)}
@@ -286,10 +310,10 @@ const FormRevisaoVidaToda = ({ onCalcular, loading }) => {
             </h4>
             <div style={{ color: previa.vantajosa ? '#155724' : '#856404', fontSize: '0.95em' }}>
               <p style={{ margin: '5px 0' }}>
-                <strong>Média pós-1994:</strong> R\$ {previa.mediaDepois}
+                <strong>Média pós-1994:</strong> R$ {previa.mediaDepois}
               </p>
               <p style={{ margin: '5px 0' }}>
-                <strong>Média vida toda:</strong> R\$ {previa.mediaVidaToda}
+                <strong>Média vida toda:</strong> R$ {previa.mediaVidaToda}
               </p>
               <p style={{ margin: '5px 0', fontWeight: 'bold' }}>
                 {previa.vantajosa ? '✅ Revisão VANTAJOSA' : '❌ Revisão NÃO vantajosa'}

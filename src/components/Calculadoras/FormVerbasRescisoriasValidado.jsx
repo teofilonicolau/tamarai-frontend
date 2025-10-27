@@ -1,9 +1,15 @@
 // src/components/Calculadoras/FormVerbasRescisoriasValidado.jsx
 import React from 'react';
 import { useValidation } from '../../hooks/useValidation';
-import { validators } from '../../utils/validators';
+import { validators } from '../../utils/validations';
 import ValidatedInput from '../Common/ValidatedInput';
 
+/**
+ * Formulário validado para Verbas Rescisórias.
+ * - Usa useValidation para regras reutilizáveis
+ * - Ao submeter, chama onCalcular({ ...values, salario: number }) do componente pai
+ * - Mantém o padrão do projeto: o pai (Calculadoras.jsx) faz o POST ao endpoint correto
+ */
 const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
   const validationRules = {
     cpf: [
@@ -59,42 +65,40 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    if (validateAll()) {
-      // Validação adicional para datas
-      if (values.data_admissao && values.data_rescisao) {
-        const admissao = new Date(values.data_admissao);
-        const rescisao = new Date(values.data_rescisao);
-        
-        if (admissao >= rescisao) {
-          alert('Data de rescisão deve ser posterior à data de admissão');
-          return;
-        }
+
+    if (!validateAll()) return;
+
+    // Validação adicional: admissão < rescisão
+    if (values.data_admissao && values.data_rescisao) {
+      const adm = new Date(values.data_admissao);
+      const rec = new Date(values.data_rescisao);
+      if (adm >= rec) {
+        // usar alert simples para feedback imediato (pode ser trocado por toast)
+        alert('Data de rescisão deve ser posterior à data de admissão');
+        return;
       }
-      
-      // ✅ CORREÇÃO ESLint: Regex sem escape desnecessário
-      // ANTES: parseFloat(values.salario.replace(/[^\d,]/g, '').replace(',', '.'))
-      // AGORA: Regex simples com hífen no final da classe de caracteres
-      onCalcular({
-        ...values,
-        salario: parseFloat(values.salario.replace(/[^\d.,-]/g, '').replace(',', '.'))
-      });
     }
+
+    // Normaliza salário para number (aceita formatos com R$, vírgula, pontos)
+    const salarioNum = parseFloat(String(values.salario).replace(/[^\d.,-]/g, '').replace(',', '.')) || 0;
+
+    // Chama o callback do pai (Calculadoras.jsx) — o pai faz o POST ao endpoint correto
+    onCalcular({
+      ...values,
+      salario: salarioNum
+    });
   };
 
   const calcularTempoServico = () => {
-    if (values.data_admissao && values.data_rescisao) {
-      const admissao = new Date(values.data_admissao);
-      const rescisao = new Date(values.data_rescisao);
-      const diffTime = Math.abs(rescisao - admissao);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      const anos = Math.floor(diffDays / 365);
-      const meses = Math.floor((diffDays % 365) / 30);
-      const dias = diffDays % 30;
-      
-      return { anos, meses, dias, totalDias: diffDays };
-    }
-    return null;
+    if (!values.data_admissao || !values.data_rescisao) return null;
+    const admissao = new Date(values.data_admissao);
+    const rescisao = new Date(values.data_rescisao);
+    const diffTime = Math.abs(rescisao - admissao);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const anos = Math.floor(diffDays / 365);
+    const meses = Math.floor((diffDays % 365) / 30);
+    const dias = diffDays % 30;
+    return { anos, meses, dias, totalDias: diffDays };
   };
 
   const tempoServico = calcularTempoServico();
@@ -107,7 +111,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
       padding: '30px'
     }}>
       <h3 style={{ color: '#495057', marginBottom: '25px', textAlign: 'center' }}>
-        �� Cálculo de Verbas Rescisórias (Validado)
+        💼 Cálculo de Verbas Rescisórias (Validado)
       </h3>
 
       <form onSubmit={handleSubmit}>
@@ -121,14 +125,14 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
           <h4 style={{ margin: '0 0 20px 0', color: '#495057' }}>
             👤 Dados Pessoais
           </h4>
-          
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <ValidatedInput
               label="CPF"
               name="cpf"
               value={values.cpf}
-              onChange={setValue}
-              onBlur={setFieldTouched}
+              onChange={(v) => setValue('cpf', v)}
+              onBlur={() => setFieldTouched('cpf')}
               error={errors.cpf}
               touched={touched.cpf}
               mask="cpf"
@@ -137,13 +141,13 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
               required
               helpText="Informe o CPF do empregado"
             />
-            
+
             <ValidatedInput
               label="Telefone"
               name="telefone"
               value={values.telefone}
-              onChange={setValue}
-              onBlur={setFieldTouched}
+              onChange={(v) => setValue('telefone', v)}
+              onBlur={() => setFieldTouched('telefone')}
               error={errors.telefone}
               touched={touched.telefone}
               mask="telefone"
@@ -152,14 +156,14 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
               helpText="Telefone para contato"
             />
           </div>
-          
+
           <ValidatedInput
             label="Email"
             name="email"
             type="email"
             value={values.email}
-            onChange={setValue}
-            onBlur={setFieldTouched}
+            onChange={(v) => setValue('email', v)}
+            onBlur={() => setFieldTouched('email')}
             error={errors.email}
             touched={touched.email}
             placeholder="exemplo@email.com"
@@ -178,13 +182,13 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
           <h4 style={{ margin: '0 0 20px 0', color: '#495057' }}>
             📋 Dados Contratuais
           </h4>
-          
+
           <ValidatedInput
             label="Salário Mensal"
             name="salario"
             value={values.salario}
-            onChange={setValue}
-            onBlur={setFieldTouched}
+            onChange={(v) => setValue('salario', v)}
+            onBlur={() => setFieldTouched('salario')}
             error={errors.salario}
             touched={touched.salario}
             mask="money"
@@ -200,8 +204,8 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
               name="data_admissao"
               type="date"
               value={values.data_admissao}
-              onChange={setValue}
-              onBlur={setFieldTouched}
+              onChange={(v) => setValue('data_admissao', v)}
+              onBlur={() => setFieldTouched('data_admissao')}
               error={errors.data_admissao}
               touched={touched.data_admissao}
               icon="📅"
@@ -214,8 +218,8 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
               name="data_rescisao"
               type="date"
               value={values.data_rescisao}
-              onChange={setValue}
-              onBlur={setFieldTouched}
+              onChange={(v) => setValue('data_rescisao', v)}
+              onBlur={() => setFieldTouched('data_rescisao')}
               error={errors.data_rescisao}
               touched={touched.data_rescisao}
               icon="📅"
@@ -297,7 +301,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
           >
             🔄 Limpar Formulário
           </button>
-          
+
           <button
             type="submit"
             disabled={loading}

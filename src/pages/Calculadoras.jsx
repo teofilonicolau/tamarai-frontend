@@ -1,5 +1,3 @@
-// src/pages/Calculadoras.jsx
-
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -14,18 +12,18 @@ import FormTempoEspecial from '../components/Calculadoras/FormTempoEspecial';
 import FormPeriodoGraca from '../components/Calculadoras/FormPeriodoGraca';
 import FormRevisaoVidaToda from '../components/Calculadoras/FormRevisaoVidaToda';
 import FormHorasExtras from '../components/Calculadoras/FormHorasExtras';
-import FormVerbasRescisorias from '../components/Calculadoras/FormVerbasRescisorias';
+import FormVerbasRescisorias from '../components/Calculadoras/FormVerbasRescisoriasValidado';
 import FormAdicionalNoturno from '../components/Calculadoras/FormAdicionalNoturno';
 import FormValorCausa from '../components/Calculadoras/FormValorCausa';
 import FormLiquidacaoSentenca from '../components/Calculadoras/FormLiquidacaoSentenca';
 import FormPensaoAlimenticia from '../components/Calculadoras/FormPensaoAlimenticia';
 import FormJurosMora from '../components/Calculadoras/FormJurosMora';
 import FormCorrecaoMonetaria from '../components/Calculadoras/FormCorrecaoMonetaria';
-import api from '../services/api';
+import { http } from '../services/api';
 
 const Calculadoras = () => {
   const location = useLocation();
-  
+
   const determinarCategoriaInicial = () => {
     const path = location.pathname;
     if (path.includes('/previdenciario')) return 'previdenciario';
@@ -44,149 +42,146 @@ const Calculadoras = () => {
 
   const calculadorasPorCategoria = {
     previdenciario: {
-      nome: '⚖️ Previdenciário',
+      nome: 'Previdenciário',
       cor: '#667eea',
       calculadoras: [
         {
           id: 'regra-transicao-ec103',
           nome: 'Regras de Transição EC 103/2019',
           descricao: 'Análise completa das 4 regras de transição',
-          icone: '📊',
+          icone: 'Chart',
           endpoint: '/api/v1/regra-transicao-ec103',
           componente: 'wizard',
-          implementado: true
+          implementado: true,
         },
         {
           id: 'tempo-especial',
           nome: 'Tempo Especial',
           descricao: 'Conversão de tempo especial em comum',
-          icone: '⚡',
+          icone: 'Zap',
           endpoint: '/api/v1/tempo-especial',
           componente: 'form',
-          implementado: true
+          implementado: true,
         },
         {
           id: 'periodo-graca',
           nome: 'Período de Graça',
           descricao: 'Cálculo do período de graça previdenciário',
-          icone: '📅',
+          icone: 'Calendar',
           endpoint: '/api/v1/periodo-graca',
           componente: 'form',
-          implementado: true
+          implementado: true,
         },
         {
           id: 'revisao-vida-toda',
           nome: 'Revisão da Vida Toda',
           descricao: 'Análise de viabilidade da revisão',
-          icone: '🔄',
+          icone: 'RefreshCw',
           endpoint: '/api/v1/revisao-vida-toda',
           componente: 'form',
-          implementado: true
-        }
-      ]
+          implementado: true,
+        },
+      ],
     },
     trabalhista: {
-      nome: '👷 Trabalhista',
+      nome: 'Trabalhista',
       cor: '#28a745',
       calculadoras: [
         {
           id: 'horas-extras',
           nome: 'Horas Extras',
           descricao: 'Cálculo de horas extras e reflexos',
-          icone: '⏰',
+          icone: 'Clock',
           endpoint: '/api/v1/horas-extras',
           componente: 'form',
-          implementado: true
+          implementado: true,
         },
         {
           id: 'verbas-rescisorias',
           nome: 'Verbas Rescisórias',
           descricao: 'Cálculo completo da rescisão',
-          icone: '💼',
+          icone: 'Briefcase',
           endpoint: '/api/v1/verbas-rescisorias',
           componente: 'form',
-          implementado: true
+          implementado: true,
         },
         {
           id: 'adicional-noturno',
           nome: 'Adicional Noturno',
           descricao: 'Cálculo do adicional noturno',
-          icone: '🌙',
+          icone: 'Moon',
           endpoint: '/api/v1/adicional-noturno',
           componente: 'form',
-          implementado: true
-        }
-      ]
+          implementado: true,
+        },
+      ],
     },
     processual: {
-      nome: '⚖️ Processual',
+      nome: 'Processual',
       cor: '#17a2b8',
       calculadoras: [
         {
           id: 'valor-causa',
           nome: 'Valor da Causa',
           descricao: 'Cálculo do valor da causa processual',
-          icone: '💰',
+          icone: 'DollarSign',
           endpoint: '/api/v1/valor-causa',
           componente: 'form',
-          implementado: true
+          implementado: true,
         },
         {
           id: 'liquidacao-sentenca',
           nome: 'Liquidação de Sentença',
           descricao: 'Liquidação com juros e correção',
-          icone: '📋',
+          icone: 'FileText',
           endpoint: '/api/v1/liquidacao-sentenca',
           componente: 'form',
-          implementado: true
+          implementado: true,
         },
         {
           id: 'pensao-alimenticia',
           nome: 'Pensão Alimentícia',
           descricao: 'Cálculo de pensão alimentícia',
-          icone: '👨‍👩‍👧‍👦',
+          icone: 'Users',
           endpoint: '/api/v1/pensao-alimenticia',
           componente: 'form',
-          implementado: true
-        }
-      ]
+          implementado: true,
+        },
+      ],
     },
     financeiro: {
-      nome: '💰 Financeiro',
+      nome: 'Financeiro',
       cor: '#ffc107',
       calculadoras: [
         {
           id: 'juros-mora',
           nome: 'Juros de Mora',
           descricao: 'Cálculo de juros moratórios',
-          icone: '📈',
+          icone: 'TrendingUp',
           endpoint: '/api/v1/juros-mora',
           componente: 'form',
-          implementado: true
+          implementado: true,
         },
         {
           id: 'correcao-monetaria',
           nome: 'Correção Monetária',
           descricao: 'Atualização monetária por índices',
-          icone: '📊',
+          icone: 'BarChart3',
           endpoint: '/api/v1/correcao-monetaria',
           componente: 'form',
-          implementado: true
-        }
-      ]
-    }
+          implementado: true,
+        },
+      ],
+    },
   };
 
   const formatarDados = (dados) => {
     const formatted = { ...dados };
-    // Formatar números e datas
-    Object.keys(formatted).forEach(key => {
+    Object.keys(formatted).forEach((key) => {
       if (typeof formatted[key] === 'string') {
-        // Limpar máscaras de CPF/CNPJ
         if (key.includes('cpf') || key.includes('cnpj')) {
           formatted[key] = formatted[key].replace(/\D/g, '');
         }
-        // Converter datas para ISO (YYYY-MM-DD)
         if (key.includes('data') || key.includes('der') || key.includes('vencimento')) {
           try {
             formatted[key] = new Date(formatted[key]).toISOString().split('T')[0];
@@ -194,17 +189,65 @@ const Calculadoras = () => {
             formatted[key] = '';
           }
         }
-        // Converter valores monetários para float
         if (key.includes('valor') || key.includes('salario') || key.includes('renda')) {
-          formatted[key] = parseFloat(formatted[key]) || 0;
+          formatted[key] =
+            parseFloat(formatted[key].replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
         }
-        // Converter tempos/quantidades para int
-        if (key.includes('tempo') || key.includes('meses') || key.includes('idade')) {
-          formatted[key] = parseInt(formatted[key]) || 0;
+        if (
+          key.includes('tempo') ||
+          key.includes('meses') ||
+          key.includes('idade') ||
+          key.includes('quantidade')
+        ) {
+          formatted[key] = parseInt(formatted[key], 10) || 0;
         }
       }
     });
     return formatted;
+  };
+
+  const normalizeResults = (obj) => {
+    if (obj == null || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return obj.map(normalizeResults);
+
+    const out = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (v == null) {
+        out[k] = v;
+        continue;
+      }
+
+      if (typeof v === 'object') {
+        out[k] = normalizeResults(v);
+        continue;
+      }
+
+      if (typeof v === 'string') {
+        const s = v.trim();
+
+        // percentual "20%" -> 20
+        if (/%$/.test(s)) {
+          const n = parseFloat(s.replace('%', '').replace(',', '.'));
+          out[k] = Number.isFinite(n) ? n : s;
+          continue;
+        }
+
+        // numeric/currency formatted strings e.g. "R$ 1.500,00" or "1.500,00" or "1500.00"
+        // Corrige o escape desnecessário de $
+        if (/^[\d.,\sR$]+$/.test(s)) {
+          const cleaned = s.replace(/[R$\s]/g, '').replace(/\./g, '').replace(',', '.');
+          const n = parseFloat(cleaned);
+          out[k] = Number.isFinite(n) ? n : s;
+          continue;
+        }
+
+        out[k] = v;
+        continue;
+      }
+
+      out[k] = v;
+    }
+    return out;
   };
 
   const calcular = async (dados) => {
@@ -213,19 +256,26 @@ const Calculadoras = () => {
     setDadosEntrada(dados);
 
     try {
-      const calculadoraConfig = calculadorasPorCategoria[categoriaAtiva]
-        .calculadoras.find(c => c.id === calculadoraAtiva);
-      
+      const calculadoraConfig = calculadorasPorCategoria[categoriaAtiva].calculadoras.find(
+        (c) => c.id === calculadoraAtiva
+      );
+
       const dadosFormatados = formatarDados(dados);
-      console.log('🧮 Enviando dados para:', calculadoraConfig.endpoint);
-      console.log('📊 Dados:', dadosFormatados);
-      
-      const response = await api.post(calculadoraConfig.endpoint, dadosFormatados);
-      setResultados(response.data.resultado || response.data);
+      console.log('Enviando dados para:', calculadoraConfig.endpoint);
+      console.log('Dados:', dadosFormatados);
+
+      const response = await http.post(calculadoraConfig.endpoint, dadosFormatados);
+
+      // normalize response payload
+      const rawResult = response.resultado || response.calculo || response;
+      const normalized = normalizeResults(rawResult);
+
+      setResultados(normalized);
       toast.success('Cálculo realizado com sucesso!');
     } catch (error) {
-      const msg = error.response?.data?.detail || 'Erro ao calcular: verifique os dados inseridos.';
-      console.error('❌ Erro no cálculo:', error);
+      const msg =
+        error?.message || error?.data?.detail || 'Erro ao calcular: verifique os dados inseridos.';
+      console.error('Erro no cálculo:', error);
       setErro(msg);
       toast.error(msg);
     } finally {
@@ -240,24 +290,20 @@ const Calculadoras = () => {
   };
 
   const renderizarFormulario = () => {
-    const calculadoraConfig = calculadorasPorCategoria[categoriaAtiva]
-      .calculadoras.find(c => c.id === calculadoraAtiva);
+    const calculadoraConfig = calculadorasPorCategoria[categoriaAtiva].calculadoras.find(
+      (c) => c.id === calculadoraAtiva
+    );
 
     if (!calculadoraConfig) {
       return (
         <div style={{ textAlign: 'center', padding: '40px' }}>
-          <h3>❌ Calculadora não encontrada</h3>
+          <h3>Calculadora não encontrada</h3>
         </div>
       );
     }
 
     if (calculadoraAtiva === 'regra-transicao-ec103') {
-      return (
-        <WizardPrevidenciario 
-          onCalcular={calcular}
-          loading={loading}
-        />
-      );
+      return <WizardPrevidenciario onCalcular={calcular} loading={loading} />;
     }
 
     const FormularioComponent = {
@@ -271,38 +317,29 @@ const Calculadoras = () => {
       'liquidacao-sentenca': FormLiquidacaoSentenca,
       'pensao-alimenticia': FormPensaoAlimenticia,
       'juros-mora': FormJurosMora,
-      'correcao-monetaria': FormCorrecaoMonetaria
+      'correcao-monetaria': FormCorrecaoMonetaria,
     }[calculadoraAtiva];
 
     if (FormularioComponent) {
-      return (
-        <FormularioComponent 
-          onCalcular={calcular}
-          loading={loading}
-        />
-      );
+      return <FormularioComponent onCalcular={calcular} loading={loading} />;
     }
 
     return (
       <div style={{ textAlign: 'center', padding: '40px' }}>
-        <div style={{ fontSize: '3em', marginBottom: '20px' }}>
-          {calculadoraConfig.icone}
-        </div>
-        <h3 style={{ color: '#495057', marginBottom: '15px' }}>
-          {calculadoraConfig.nome}
-        </h3>
-        <p style={{ color: '#6c757d', marginBottom: '25px' }}>
-          {calculadoraConfig.descricao}
-        </p>
+        <div style={{ fontSize: '3em', marginBottom: '20px' }}>{calculadoraConfig.icone}</div>
+        <h3 style={{ color: '#495057', marginBottom: '15px' }}>{calculadoraConfig.nome}</h3>
+        <p style={{ color: '#6c757d', marginBottom: '25px' }}>{calculadoraConfig.descricao}</p>
         <p style={{ color: '#856404', marginBottom: '25px' }}>
-          🚧 Formulário específico em desenvolvimento
+          Formulário específico em desenvolvimento
         </p>
         <button
-          onClick={() => calcular({
-            teste: true,
-            calculadora: calculadoraAtiva,
-            timestamp: new Date().toISOString()
-          })}
+          onClick={() =>
+            calcular({
+              teste: true,
+              calculadora: calculadoraAtiva,
+              timestamp: new Date().toISOString(),
+            })
+          }
           disabled={loading}
           style={{
             padding: '12px 24px',
@@ -312,10 +349,10 @@ const Calculadoras = () => {
             borderRadius: '6px',
             cursor: loading ? 'not-allowed' : 'pointer',
             fontSize: '1em',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
           }}
         >
-          {loading ? '⏳ Calculando...' : '🧪 Teste com Dados Mock'}
+          {loading ? 'Calculando...' : 'Teste com Dados Mock'}
         </button>
       </div>
     );
@@ -328,10 +365,7 @@ const Calculadoras = () => {
       return (
         <>
           <RegrasComparator resultados={resultados} />
-          <ResultadosDetalhados 
-            resultados={resultados} 
-            dadosEntrada={dadosEntrada}
-          />
+          <ResultadosDetalhados resultados={resultados} dadosEntrada={dadosEntrada} />
         </>
       );
     }
@@ -340,12 +374,12 @@ const Calculadoras = () => {
       previdenciario: ResultadosPrevidenciarios,
       trabalhista: ResultadosTrabalhistas,
       processual: ResultadosProcessuais,
-      financeiro: ResultadosFinanceiros
+      financeiro: ResultadosFinanceiros,
     }[categoriaAtiva];
 
     if (ComponenteResultado) {
       return (
-        <ComponenteResultado 
+        <ComponenteResultado
           tipo={calculadoraAtiva}
           resultados={resultados}
           dadosEntrada={dadosEntrada}
@@ -354,59 +388,69 @@ const Calculadoras = () => {
     }
 
     return (
-      <div style={{
-        background: 'white',
-        padding: '30px',
-        borderRadius: '12px',
-        border: '1px solid #dee2e6'
-      }}>
-        <h3>📊 Resultado do Cálculo</h3>
-        <pre style={{ 
-          background: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '8px',
-          overflow: 'auto',
-          fontSize: '0.9em'
-        }}>
+      <div
+        style={{
+          background: 'white',
+          padding: '30px',
+          borderRadius: '12px',
+          border: '1px solid #dee2e6',
+        }}
+      >
+        <h3>Resultado do Cálculo</h3>
+        <pre
+          style={{
+            background: '#f8f9fa',
+            padding: '20px',
+            borderRadius: '8px',
+            overflow: 'auto',
+            fontSize: '0.9em',
+          }}
+        >
           {JSON.stringify(resultados, null, 2)}
         </pre>
       </div>
     );
   };
 
-  const calculadoraAtual = calculadorasPorCategoria[categoriaAtiva]
-    ?.calculadoras.find(c => c.id === calculadoraAtiva);
+  const calculadoraAtual = calculadorasPorCategoria[categoriaAtiva]?.calculadoras.find(
+    (c) => c.id === calculadoraAtiva
+  );
 
   return (
-    <div style={{ 
-      maxWidth: '1400px', 
-      margin: '0 auto', 
-      padding: '20px',
-      minHeight: '100vh'
-    }}>
-      <div style={{ 
-        textAlign: 'center', 
-        marginBottom: '40px',
-        background: `linear-gradient(135deg, ${calculadorasPorCategoria[categoriaAtiva].cor} 0%, #764ba2 100%)`,
-        color: 'white',
-        padding: '40px',
-        borderRadius: '12px'
-      }}>
-        <h1 style={{ margin: '0 0 15px 0', fontSize: '2.5em' }}>
-          🧮 Calculadoras Jurídicas
-        </h1>
+    <div
+      style={{
+        maxWidth: '1400px',
+        margin: '0 auto',
+        padding: '20px',
+        minHeight: '100vh',
+      }}
+    >
+      <div
+        style={{
+          textAlign: 'center',
+          marginBottom: '40px',
+          background: `linear-gradient(135deg, ${calculadorasPorCategoria[categoriaAtiva].cor} 0%, #764ba2 100%)`,
+          color: 'white',
+          padding: '40px',
+          borderRadius: '12px',
+        }}
+      >
+        <h1 style={{ margin: '0 0 15px 0', fontSize: '2.5em' }}>Calculadoras Jurídicas</h1>
         <p style={{ margin: '0', fontSize: '1.2em', opacity: '0.9' }}>
-          {calculadorasPorCategoria[categoriaAtiva].nome} - {calculadoraAtual?.nome || 'Selecione uma calculadora'}
+          {calculadorasPorCategoria[categoriaAtiva].nome} -{' '}
+          {calculadoraAtual?.nome || 'Selecione uma calculadora'}
         </p>
       </div>
 
-      <div style={{ 
-        display: 'flex', 
-        gap: '10px', 
-        marginBottom: '30px',
-        flexWrap: 'wrap',
-        justifyContent: 'center'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '10px',
+          marginBottom: '30px',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+        }}
+      >
         {Object.entries(calculadorasPorCategoria).map(([key, categoria]) => (
           <button
             key={key}
@@ -424,7 +468,7 @@ const Calculadoras = () => {
               cursor: 'pointer',
               fontSize: '1em',
               fontWeight: 'bold',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
             }}
           >
             {categoria.nome}
@@ -432,13 +476,15 @@ const Calculadoras = () => {
         ))}
       </div>
 
-      <div style={{ 
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '20px',
-        marginBottom: '40px'
-      }}>
-        {calculadorasPorCategoria[categoriaAtiva].calculadoras.map(calc => (
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '20px',
+          marginBottom: '40px',
+        }}
+      >
+        {calculadorasPorCategoria[categoriaAtiva].calculadoras.map((calc) => (
           <div
             key={calc.id}
             onClick={() => {
@@ -447,106 +493,110 @@ const Calculadoras = () => {
             }}
             style={{
               padding: '20px',
-              border: `2px solid ${calculadoraAtiva === calc.id ? calculadorasPorCategoria[categoriaAtiva].cor : '#dee2e6'}`,
+              border: `2px solid ${
+                calculadoraAtiva === calc.id
+                  ? calculadorasPorCategoria[categoriaAtiva].cor
+                  : '#dee2e6'
+              }`,
               borderRadius: '12px',
               cursor: 'pointer',
               background: calculadoraAtiva === calc.id ? '#f8f9fa' : 'white',
               transition: 'all 0.3s ease',
-              boxShadow: calculadoraAtiva === calc.id ? '0 4px 12px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.05)',
-              position: 'relative'
+              boxShadow:
+                calculadoraAtiva === calc.id
+                  ? '0 4px 12px rgba(0,0,0,0.1)'
+                  : '0 2px 4px rgba(0,0,0,0.05)',
+              position: 'relative',
             }}
           >
-            <div style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              background: calc.implementado ? '#28a745' : '#ffc107',
-              color: 'white',
-              padding: '4px 8px',
-              borderRadius: '12px',
-              fontSize: '0.7em',
-              fontWeight: 'bold'
-            }}>
-              {calc.implementado ? '✅ ATIVO' : '🚧 DEV'}
+            <div
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                background: calc.implementado ? '#28a745' : '#ffc107',
+                color: 'white',
+                padding: '4px 8px',
+                borderRadius: '12px',
+                fontSize: '0.7em',
+                fontWeight: 'bold',
+              }}
+            >
+              {calc.implementado ? 'ATIVO' : 'DEV'}
             </div>
-            
-            <div style={{ 
-              fontSize: '2em', 
-              marginBottom: '10px',
-              textAlign: 'center'
-            }}>
+
+            <div style={{ fontSize: '2em', marginBottom: '10px', textAlign: 'center' }}>
               {calc.icone}
             </div>
-            <h3 style={{ 
-              margin: '0 0 8px 0', 
-              color: '#495057',
-              textAlign: 'center',
-              paddingRight: '60px'
-            }}>
+            <h3
+              style={{
+                margin: '0 0 8px 0',
+                color: '#495057',
+                textAlign: 'center',
+                paddingRight: '60px',
+              }}
+            >
               {calc.nome}
             </h3>
-            <p style={{ 
-              margin: '0', 
-              color: '#6c757d',
-              fontSize: '0.9em',
-              textAlign: 'center'
-            }}>
+            <p style={{ margin: '0', color: '#6c757d', fontSize: '0.9em', textAlign: 'center' }}>
               {calc.descricao}
             </p>
           </div>
         ))}
       </div>
 
-      <div style={{
-        background: 'white',
-        borderRadius: '12px',
-        border: '1px solid #dee2e6',
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          background: calculadorasPorCategoria[categoriaAtiva].cor,
-          color: 'white',
-          padding: '20px',
-          textAlign: 'center'
-        }}>
+      <div
+        style={{
+          background: 'white',
+          borderRadius: '12px',
+          border: '1px solid #dee2e6',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            background: calculadorasPorCategoria[categoriaAtiva].cor,
+            color: 'white',
+            padding: '20px',
+            textAlign: 'center',
+          }}
+        >
           <h2 style={{ margin: '0', fontSize: '1.5em' }}>
             {calculadoraAtual?.icone} {calculadoraAtual?.nome}
           </h2>
-          <p style={{ margin: '8px 0 0 0', opacity: '0.9' }}>
-            {calculadoraAtual?.descricao}
-          </p>
+          <p style={{ margin: '8px 0 0 0', opacity: '0.9' }}>{calculadoraAtual?.descricao}</p>
         </div>
 
-        <div style={{ padding: '30px' }}>
-          {renderizarFormulario()}
-        </div>
+        <div style={{ padding: '30px' }}>{renderizarFormulario()}</div>
       </div>
 
       {erro && (
-        <div style={{
-          background: '#f8d7da',
-          color: '#721c24',
-          padding: '15px',
-          borderRadius: '8px',
-          marginTop: '20px',
-          border: '1px solid #f5c6cb'
-        }}>
-          ❌ <strong>Erro:</strong> {erro}
+        <div
+          style={{
+            background: '#f8d7da',
+            color: '#721c24',
+            padding: '15px',
+            borderRadius: '8px',
+            marginTop: '20px',
+            border: '1px solid #f5c6cb',
+          }}
+        >
+          <strong>Erro:</strong> {erro}
         </div>
       )}
 
       {loading && (
-        <div style={{
-          textAlign: 'center',
-          padding: '40px',
-          background: '#e3f2fd',
-          borderRadius: '12px',
-          marginTop: '20px'
-        }}>
-          <div style={{ fontSize: '3em', marginBottom: '15px' }}>⏳</div>
-          <h3 style={{ margin: '0', color: '#1565c0' }}>
-            Processando cálculo...
-          </h3>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '40px',
+            background: '#e3f2fd',
+            borderRadius: '12px',
+            marginTop: '20px',
+          }}
+        >
+          <div style={{ fontSize: '3em', marginBottom: '15px' }}>Hourglass</div>
+          <h3 style={{ margin: '0', color: '#1565c0' }}>Processando cálculo...</h3>
         </div>
       )}
 
@@ -561,10 +611,10 @@ const Calculadoras = () => {
                 background: 'transparent',
                 color: '#6c757d',
                 borderRadius: '6px',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
-              🔄 Nova Consulta
+              Nova Consulta
             </button>
           </div>
 
@@ -572,18 +622,20 @@ const Calculadoras = () => {
         </div>
       )}
 
-      <div style={{
-        marginTop: '40px',
-        padding: '20px',
-        background: '#f8f9fa',
-        borderRadius: '8px',
-        textAlign: 'center',
-        fontSize: '0.9em',
-        color: '#6c757d'
-      }}>
+      <div
+        style={{
+          marginTop: '40px',
+          padding: '20px',
+          background: '#f8f9fa',
+          borderRadius: '8px',
+          textAlign: 'center',
+          fontSize: '0.9em',
+          color: '#6c757d',
+        }}
+      >
         <p style={{ margin: '0' }}>
-          ⚖️ <strong>Importante:</strong> Estas calculadoras são ferramentas de orientação. 
-          Para decisões definitivas, consulte sempre um advogado especializado.
+          <strong>Importante:</strong> Estas calculadoras são ferramentas de orientação. Para
+          decisões definitivas, consulte sempre um advogado especializado.
         </p>
       </div>
     </div>
@@ -591,4 +643,3 @@ const Calculadoras = () => {
 };
 
 export default Calculadoras;
-
