@@ -233,7 +233,6 @@ const Calculadoras = () => {
         }
 
         // numeric/currency formatted strings e.g. "R$ 1.500,00" or "1.500,00" or "1500.00"
-        // Corrige o escape desnecessário de $
         if (/^[\d.,\sR$]+$/.test(s)) {
           const cleaned = s.replace(/[R$\s]/g, '').replace(/\./g, '').replace(',', '.');
           const n = parseFloat(cleaned);
@@ -264,18 +263,27 @@ const Calculadoras = () => {
       console.log('Enviando dados para:', calculadoraConfig.endpoint);
       console.log('Dados:', dadosFormatados);
 
-      const response = await http.post(calculadoraConfig.endpoint, dadosFormatados);
+      // Faz a chamada e usa response.data quando disponível (axios)
+      const resp = await http.post(calculadoraConfig.endpoint, dadosFormatados);
+      const responseData = resp && resp.data ? resp.data : resp;
 
-      // normalize response payload
-      const rawResult = response.resultado || response.calculo || response;
+      console.log('Resposta bruta da API:', responseData);
+
+      // normalize response payload - procurar em propiedades comuns
+      const rawResult = responseData.resultado || responseData.calculo || responseData;
       const normalized = normalizeResults(rawResult);
 
       setResultados(normalized);
       toast.success('Cálculo realizado com sucesso!');
     } catch (error) {
+      // tenta extrair mensagem útil
+      const serverData = error?.response?.data;
       const msg =
-        error?.message || error?.data?.detail || 'Erro ao calcular: verifique os dados inseridos.';
-      console.error('Erro no cálculo:', error);
+        serverData?.detail ||
+        serverData?.message ||
+        error?.message ||
+        'Erro ao calcular: verifique os dados inseridos.';
+      console.error('Erro no cálculo:', error, serverData);
       setErro(msg);
       toast.error(msg);
     } finally {
@@ -562,7 +570,7 @@ const Calculadoras = () => {
           }}
         >
           <h2 style={{ margin: '0', fontSize: '1.5em' }}>
-            {calculadoraAtual?.icone} {calculadoraAtual?.nome}
+            {calculadorasPorCategoria[categoriaAtiva].calculadoras.find((c) => c.id === calculadoraAtiva)?.icone} {calculadoraAtual?.nome}
           </h2>
           <p style={{ margin: '8px 0 0 0', opacity: '0.9' }}>{calculadoraAtual?.descricao}</p>
         </div>

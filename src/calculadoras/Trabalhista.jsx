@@ -1,4 +1,6 @@
 // src/calculadoras/Trabalhista.jsx
+// ARQUIVO OBSOLETO - NÃO É USADO NO PROJETO ATUAL
+// A lógica foi migrada para src/pages/Calculadoras.jsx
 import React, { useState } from 'react';
 import FormHorasExtras from '../components/Calculadoras/FormHorasExtras';
 import FormVerbasRescisorias from '../components/Calculadoras/FormVerbasRescisorias';

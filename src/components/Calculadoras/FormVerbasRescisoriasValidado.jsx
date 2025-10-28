@@ -5,20 +5,41 @@ import { validators } from '../../utils/validations';
 import ValidatedInput from '../Common/ValidatedInput';
 
 /**
- * Formulário validado para Verbas Rescisórias.
- * - Usa useValidation para regras reutilizáveis
- * - Ao submeter, chama onCalcular({ ...values, salario: number }) do componente pai
- * - Mantém o padrão do projeto: o pai (Calculadoras.jsx) faz o POST ao endpoint correto
+ * Formulário para Verbas Rescisórias (produção - sem logs/alerts)
+ * - Faz parse do salário corretamente
+ * - Validação local como fallback (exibe erros inline através do hook)
+ * - Envia apenas { salario: number, data_admissao, data_rescisao, tipo_rescisao }
  */
 const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
+  const parseMoney = (value) => {
+    if (value == null) return 0;
+    const s = String(value);
+    let cleaned = s.replace(/[^\d,.-]/g, '');
+    if (cleaned.indexOf('.') > -1 && cleaned.indexOf(',') > -1) {
+      // assume formato pt-BR: '.' milhares e ',' decimal
+      cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+    } else {
+      cleaned = cleaned.replace(',', '.');
+    }
+    // tratar múltiplos pontos
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      cleaned = parts.slice(0, -1).join('') + '.' + parts[parts.length - 1];
+    }
+    const n = parseFloat(cleaned);
+    return Number.isFinite(n) ? n : 0;
+  };
+
   const validationRules = {
-    cpf: [
-      { required: true, message: 'CPF é obrigatório' },
-      { validator: validators.cpf, message: 'CPF inválido' }
-    ],
     salario: [
       { required: true, message: 'Salário é obrigatório' },
-      { validator: (value) => validators.valorMonetario(value, 1320, 50000), message: 'Salário deve estar entre R$ 1.320,00 e R$ 50.000,00' }
+      {
+        validator: (v) => {
+          const numeric = parseMoney(v);
+          return numeric >= 1320 && numeric <= 50000;
+        },
+        message: 'Salário deve estar entre R$ 1.320,00 e R$ 50.000,00'
+      }
     ],
     data_admissao: [
       { required: true, message: 'Data de admissão é obrigatória' },
@@ -28,11 +49,8 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
       { required: true, message: 'Data de rescisão é obrigatória' },
       { validator: validators.data, message: 'Data inválida' }
     ],
-    telefone: [
-      { validator: validators.telefone, message: 'Telefone inválido' }
-    ],
-    email: [
-      { validator: validators.email, message: 'Email inválido' }
+    tipo_rescisao: [
+      { required: true, message: 'Tipo de rescisão é obrigatório' }
     ]
   };
 
@@ -45,12 +63,9 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
     validateAll,
     resetForm
   } = useValidation({
-    cpf: '',
     salario: '',
     data_admissao: '',
     data_rescisao: '',
-    telefone: '',
-    email: '',
     tipo_rescisao: 'sem_justa_causa'
   }, validationRules);
 
@@ -62,32 +77,6 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
     { value: 'acordo_mutuo', label: '🤝 Acordo Mútuo', cor: '#17a2b8' },
     { value: 'termino_contrato', label: '📅 Término de Contrato', cor: '#6f42c1' }
   ];
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!validateAll()) return;
-
-    // Validação adicional: admissão < rescisão
-    if (values.data_admissao && values.data_rescisao) {
-      const adm = new Date(values.data_admissao);
-      const rec = new Date(values.data_rescisao);
-      if (adm >= rec) {
-        // usar alert simples para feedback imediato (pode ser trocado por toast)
-        alert('Data de rescisão deve ser posterior à data de admissão');
-        return;
-      }
-    }
-
-    // Normaliza salário para number (aceita formatos com R$, vírgula, pontos)
-    const salarioNum = parseFloat(String(values.salario).replace(/[^\d.,-]/g, '').replace(',', '.')) || 0;
-
-    // Chama o callback do pai (Calculadoras.jsx) — o pai faz o POST ao endpoint correto
-    onCalcular({
-      ...values,
-      salario: salarioNum
-    });
-  };
 
   const calcularTempoServico = () => {
     if (!values.data_admissao || !values.data_rescisao) return null;
@@ -103,6 +92,64 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
 
   const tempoServico = calcularTempoServico();
 
+  // Validação local (fallback) - marca campos como touched para que o hook mostre erros inline
+  const validaLocal = () => {
+    const problemas = {};
+    const salarioNum = parseMoney(values.salario);
+
+    if (!(salarioNum >= 1320 && salarioNum <= 50000)) {
+      problemas.salario = 'Salário deve estar entre R$ 1.320,00 e R$ 50.000,00';
+    }
+
+    if (!values.data_admissao) {
+      problemas.data_admissao = 'Data de admissão é obrigatória';
+    } else if (!validators.data(values.data_admissao)) {
+      problemas.data_admissao = 'Data de admissão inválida';
+    }
+
+    if (!values.data_rescisao) {
+      problemas.data_rescisao = 'Data de rescisão é obrigatória';
+    } else if (!validators.data(values.data_rescisao)) {
+      problemas.data_rescisao = 'Data de rescisão inválida';
+    }
+
+    if (values.data_admissao && values.data_rescisao) {
+      const adm = new Date(values.data_admissao);
+      const rec = new Date(values.data_rescisao);
+      if (adm >= rec) {
+        problemas.data_rescisao = 'Data de rescisão deve ser posterior à data de admissão';
+      }
+    }
+
+    if (!values.tipo_rescisao) {
+      problemas.tipo_rescisao = 'Tipo de rescisão é obrigatório';
+    }
+
+    return { ok: Object.keys(problemas).length === 0, problemas, salarioNum };
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // validação pelo hook
+    const hookOk = validateAll();
+
+    // validação local fallback
+    const { ok, problemas, salarioNum } = validaLocal();
+    if (!ok) {
+      // marca os campos com problemas como touched para que o hook calcule e exiba as mensagens
+      Object.keys(problemas).forEach((k) => setFieldTouched(k));
+      return;
+    }
+
+    onCalcular({
+      salario: salarioNum,
+      data_admissao: values.data_admissao,
+      data_rescisao: values.data_rescisao,
+      tipo_rescisao: values.tipo_rescisao
+    });
+  };
+
   return (
     <div style={{
       background: 'white',
@@ -111,68 +158,10 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
       padding: '30px'
     }}>
       <h3 style={{ color: '#495057', marginBottom: '25px', textAlign: 'center' }}>
-        💼 Cálculo de Verbas Rescisórias (Validado)
+        💼 Cálculo de Verbas Rescisórias
       </h3>
 
       <form onSubmit={handleSubmit}>
-        {/* Dados Pessoais */}
-        <div style={{
-          background: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '8px',
-          marginBottom: '25px'
-        }}>
-          <h4 style={{ margin: '0 0 20px 0', color: '#495057' }}>
-            👤 Dados Pessoais
-          </h4>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-            <ValidatedInput
-              label="CPF"
-              name="cpf"
-              value={values.cpf}
-              onChange={(v) => setValue('cpf', v)}
-              onBlur={() => setFieldTouched('cpf')}
-              error={errors.cpf}
-              touched={touched.cpf}
-              mask="cpf"
-              placeholder="000.000.000-00"
-              icon="🆔"
-              required
-              helpText="Informe o CPF do empregado"
-            />
-
-            <ValidatedInput
-              label="Telefone"
-              name="telefone"
-              value={values.telefone}
-              onChange={(v) => setValue('telefone', v)}
-              onBlur={() => setFieldTouched('telefone')}
-              error={errors.telefone}
-              touched={touched.telefone}
-              mask="telefone"
-              placeholder="(00) 00000-0000"
-              icon="📱"
-              helpText="Telefone para contato"
-            />
-          </div>
-
-          <ValidatedInput
-            label="Email"
-            name="email"
-            type="email"
-            value={values.email}
-            onChange={(v) => setValue('email', v)}
-            onBlur={() => setFieldTouched('email')}
-            error={errors.email}
-            touched={touched.email}
-            placeholder="exemplo@email.com"
-            icon="📧"
-            helpText="Email para envio do relatório"
-          />
-        </div>
-
-        {/* Dados Contratuais */}
         <div style={{
           background: '#f8f9fa',
           padding: '20px',
@@ -195,10 +184,10 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
             placeholder="R$ 0,00"
             icon="💰"
             required
-            helpText="Último salário recebido pelo empregado"
+            helpText="Informe o salário mensal (ex.: R$ 1.600,00)"
           />
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: 12 }}>
             <ValidatedInput
               label="Data de Admissão"
               name="data_admissao"
@@ -229,7 +218,6 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
           </div>
         </div>
 
-        {/* Tempo de Serviço */}
         {tempoServico && (
           <div style={{
             background: '#e8f5e8',
@@ -250,7 +238,6 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
           </div>
         )}
 
-        {/* Tipo de Rescisão */}
         <div style={{ marginBottom: '25px' }}>
           <label style={{ display: 'block', marginBottom: '12px', fontWeight: 'bold', color: '#495057' }}>
             ⚖️ Tipo de Rescisão: <span style={{ color: '#dc3545' }}>*</span>
@@ -283,7 +270,6 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
           </div>
         </div>
 
-        {/* Botões */}
         <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
           <button
             type="button"

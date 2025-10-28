@@ -13,6 +13,39 @@ const ResultadosTrabalhistas = ({ tipo, resultados = {}, dadosEntrada }) => {
     return `${tempo.anos || 0} anos, ${tempo.meses || 0} meses e ${tempo.dias || 0} dias`;
   };
 
+  // Normaliza um valor de percentual vindo do backend pra number (ex.: 20, "20%", "20,0", {percentual:20})
+  const parsePercentual = (raw) => {
+    if (raw == null) return NaN;
+
+    if (typeof raw === 'number') {
+      return Number.isFinite(raw) ? raw : NaN;
+    }
+
+    if (typeof raw === 'string') {
+      const cleaned = raw.replace('%', '').replace(/\s/g, '').replace(',', '.');
+      const n = parseFloat(cleaned);
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    if (typeof raw === 'object') {
+      const candidates = [
+        raw.percentual,
+        raw.percentual_adicional,
+        raw.value,
+        raw.percent,
+        raw.data,
+      ];
+      for (const c of candidates) {
+        if (c != null) {
+          const parsed = parsePercentual(c);
+          if (Number.isFinite(parsed)) return parsed;
+        }
+      }
+    }
+
+    return NaN;
+  };
+
   // Componente reutilizável para seção de dados de entrada
   const DadosEntradaSection = () => (
     dadosEntrada && (
@@ -143,11 +176,12 @@ const ResultadosTrabalhistas = ({ tipo, resultados = {}, dadosEntrada }) => {
 
   // Seção Adicional Noturno (defensiva)
   const AdicionalNoturnoSection = () => {
-    const percRaw = resultados?.percentual_adicional;
-    const percNum = typeof percRaw === 'number'
-      ? percRaw
-      : (typeof percRaw === 'string' ? parseFloat(String(percRaw).replace('%', '').replace(',', '.')) : NaN);
-    const percToShow = Number.isFinite(percNum) ? percNum : 20;
+    const percRaw = (resultados?.percentual_adicional ?? resultados?.percentual) || resultados?.adicional_percentual;
+    const percNum = parsePercentual(percRaw);
+    const percToShow = Number.isFinite(percNum) ? percNum : 20; // fallback 20%
+
+    // Formatar exibição segura do percentual
+    const percentualExibicao = `${Math.round(percToShow)}%`;
 
     return (
       <div style={{
@@ -163,9 +197,9 @@ const ResultadosTrabalhistas = ({ tipo, resultados = {}, dadosEntrada }) => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '25px' }}>
           <div style={{ background: '#e8f5e8', padding: '15px', borderRadius: '8px' }}>
             <h4 style={{ margin: '0 0 10px 0', color: '#155724' }}>📊 Cálculo</h4>
-            <p><strong>Horas noturnas/dia:</strong> {resultados.horas_noturnas_diarias || 0}h</p>
+            <p><strong>Horas noturnas/dia:</strong> {resultados.horas_noturnas_diarias || resultados.horas_noturnas || 0}h</p>
             <p><strong>Total horas noturnas:</strong> {resultados.total_horas_noturnas || 0}h</p>
-            <p><strong>Percentual adicional:</strong> {percToShow.toFixed(0)}%</p>
+            <p><strong>Percentual adicional:</strong> {percentualExibicao}</p>
           </div>
 
           <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '8px' }}>
