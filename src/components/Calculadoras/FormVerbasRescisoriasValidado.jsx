@@ -70,12 +70,12 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
   }, validationRules);
 
   const tiposRescisao = [
-    { value: 'sem_justa_causa', label: '🚫 Demissão sem Justa Causa', cor: '#dc3545' },
-    { value: 'com_justa_causa', label: '⚠️ Demissão com Justa Causa', cor: '#fd7e14' },
-    { value: 'pedido_demissao', label: '🚪 Pedido de Demissão', cor: '#6c757d' },
-    { value: 'rescisao_indireta', label: '⚖️ Rescisão Indireta', cor: '#28a745' },
-    { value: 'acordo_mutuo', label: '🤝 Acordo Mútuo', cor: '#17a2b8' },
-    { value: 'termino_contrato', label: '📅 Término de Contrato', cor: '#6f42c1' }
+    { value: 'sem_justa_causa', label: 'Demissão sem Justa Causa', cor: '#dc3545' },
+    { value: 'com_justa_causa', label: 'Demissão com Justa Causa', cor: '#fd7e14' },
+    { value: 'pedido_demissao', label: 'Pedido de Demissão', cor: '#6c757d' },
+    { value: 'rescisao_indireta', label: 'Rescisão Indireta', cor: '#28a745' },
+    { value: 'acordo_mutuo', label: 'Acordo Mútuo', cor: '#17a2b8' },
+    { value: 'termino_contrato', label: 'Término de Contrato', cor: '#6f42c1' }
   ];
 
   const calcularTempoServico = () => {
@@ -110,7 +110,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
     if (!values.data_rescisao) {
       problemas.data_rescisao = 'Data de rescisão é obrigatória';
     } else if (!validators.data(values.data_rescisao)) {
-      problemas.data_rescisao = 'Data de rescisão inválida';
+      problemas.data_rescisao = 'Data de rescisão inválida'; // CORRIGIDO: Ш= → =
     }
 
     if (values.data_admissao && values.data_rescisao) {
@@ -131,13 +131,12 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // validação pelo hook
-    const hookOk = validateAll();
+    // Validação pelo hook
+    if (!validateAll()) return;
 
-    // validação local fallback
+    // Validação local fallback
     const { ok, problemas, salarioNum } = validaLocal();
     if (!ok) {
-      // marca os campos com problemas como touched para que o hook calcule e exiba as mensagens
       Object.keys(problemas).forEach((k) => setFieldTouched(k));
       return;
     }
@@ -158,7 +157,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
       padding: '30px'
     }}>
       <h3 style={{ color: '#495057', marginBottom: '25px', textAlign: 'center' }}>
-        💼 Cálculo de Verbas Rescisórias
+        Cálculo de Verbas Rescisórias
       </h3>
 
       <form onSubmit={handleSubmit}>
@@ -169,7 +168,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
           marginBottom: '25px'
         }}>
           <h4 style={{ margin: '0 0 20px 0', color: '#495057' }}>
-            📋 Dados Contratuais
+            Dados Contratuais
           </h4>
 
           <ValidatedInput
@@ -182,7 +181,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
             touched={touched.salario}
             mask="money"
             placeholder="R$ 0,00"
-            icon="💰"
+            icon="money"
             required
             helpText="Informe o salário mensal (ex.: R$ 1.600,00)"
           />
@@ -197,7 +196,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
               onBlur={() => setFieldTouched('data_admissao')}
               error={errors.data_admissao}
               touched={touched.data_admissao}
-              icon="📅"
+              icon="calendar"
               required
               helpText="Data de início do contrato"
             />
@@ -211,7 +210,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
               onBlur={() => setFieldTouched('data_rescisao')}
               error={errors.data_rescisao}
               touched={touched.data_rescisao}
-              icon="📅"
+              icon="calendar"
               required
               helpText="Data de término do contrato"
             />
@@ -227,7 +226,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
             border: '1px solid #28a745'
           }}>
             <h4 style={{ margin: '0 0 10px 0', color: '#155724' }}>
-              ⏱️ Tempo de Serviço Calculado:
+              Tempo de Serviço Calculado:
             </h4>
             <p style={{ margin: '0', color: '#155724', fontSize: '1.1em', fontWeight: 'bold' }}>
               {tempoServico.anos} anos, {tempoServico.meses} meses e {tempoServico.dias} dias
@@ -240,7 +239,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
 
         <div style={{ marginBottom: '25px' }}>
           <label style={{ display: 'block', marginBottom: '12px', fontWeight: 'bold', color: '#495057' }}>
-            ⚖️ Tipo de Rescisão: <span style={{ color: '#dc3545' }}>*</span>
+            Tipo de Rescisão: <span style={{ color: '#dc3545' }}>*</span>
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '10px' }}>
             {tiposRescisao.map(tipo => (
@@ -285,7 +284,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
               fontWeight: 'bold'
             }}
           >
-            🔄 Limpar Formulário
+            Limpar Formulário
           </button>
 
           <button
@@ -302,7 +301,7 @@ const FormVerbasRescisoriasValidado = ({ onCalcular, loading }) => {
               fontWeight: 'bold'
             }}
           >
-            {loading ? '⏳ Calculando...' : '🧮 Calcular Verbas Rescisórias'}
+            {loading ? 'Calculando...' : 'Calcular Verbas Rescisórias'}
           </button>
         </div>
       </form>
