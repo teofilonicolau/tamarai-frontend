@@ -1,11 +1,29 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
-const FormCorrecaoMonetaria = ({ onSubmit, loading }) => {
+/**
+ * FormCorrecaoMonetaria
+ * - Usa onCalcular (contrato padrão dos formulários) para integrar com Calculadoras.jsx
+ * - data_final é opcional
+ * - botão maior, com hover e estado disabled visual
+ */
+const FormCorrecaoMonetaria = ({ onCalcular, loading }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
 
+  const submit = (data) => {
+    // Envia os mesmos campos que o backend espera; o pai (Calculadoras.formatarDados) fará conversões
+    if (onCalcular) {
+      onCalcular({
+        valor: data.valor,
+        data_inicial: data.data_inicial,
+        data_final: data.data_final || '',
+        indice: data.indice
+      });
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+    <form onSubmit={handleSubmit(submit)} className="space-y-3">
       <div>
         <label className="block text-sm font-medium mb-1">Valor</label>
         <input
@@ -32,7 +50,7 @@ const FormCorrecaoMonetaria = ({ onSubmit, loading }) => {
           <input
             type="date"
             className="w-full border rounded-md px-3 py-2"
-            {...register('data_final', { required: 'Obrigatório' })}
+            {...register('data_final')}
           />
           {errors.data_final && <span className="text-red-500 text-xs">{errors.data_final.message}</span>}
         </div>
@@ -50,7 +68,7 @@ const FormCorrecaoMonetaria = ({ onSubmit, loading }) => {
       <button
         type="submit"
         disabled={loading}
-        className="px-4 py-2 rounded-md bg-blue-600 text-white disabled:opacity-60"
+        className="w-full px-6 py-3 rounded-md bg-blue-600 text-white disabled:opacity-60 hover:bg-blue-700 transition"
       >
         {loading ? 'Calculando…' : 'Calcular'}
       </button>
