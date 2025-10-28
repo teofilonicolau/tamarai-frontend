@@ -263,11 +263,11 @@ const Calculadoras = () => {
       console.log('Enviando dados para:', calculadoraConfig.endpoint);
       console.log('Dados:', dadosFormatados);
 
-      // Faz a chamada e usa response.data quando disponível (axios)
+      // Faz a chamada (http.* retorna response.data)
       const resp = await http.post(calculadoraConfig.endpoint, dadosFormatados);
-      const responseData = resp && resp.data ? resp.data : resp;
+      const responseData = resp && resp.calculo ? resp.calculo : resp;
 
-      console.log('Resposta bruta da API:', responseData);
+      console.log('Resposta bruta da API:', resp);
 
       // normalize response payload - procurar em propiedades comuns
       const rawResult = responseData.resultado || responseData.calculo || responseData;
@@ -276,16 +276,37 @@ const Calculadoras = () => {
       setResultados(normalized);
       toast.success('Cálculo realizado com sucesso!');
     } catch (error) {
-      // tenta extrair mensagem útil
-      const serverData = error?.response?.data;
-      const msg =
-        serverData?.detail ||
-        serverData?.message ||
-        error?.message ||
-        'Erro ao calcular: verifique os dados inseridos.';
+      // Extrai dados do erro retornado pelo wrapper (src/services/api.js rejeita com {status,message,data})
+      const serverData = error?.data || error?.response?.data || error?.response || null;
+      let msg = 'Erro ao calcular: verifique os dados inseridos.';
+
+      if (serverData) {
+        // Pydantic/FastAPI usual: { detail: [ {loc:..., msg:..., type:...}, ... ] }
+        if (Array.isArray(serverData)) {
+          // caso o wrapper tenha rejeitado direto com um array
+          msg = serverData.map(item => {
+            if (!item) return '';
+            if (typeof item === 'string') return item;
+            if (item.msg) return item.msg;
+            return JSON.stringify(item);
+          }).join(' ; ');
+        } else if (Array.isArray(serverData.detail)) {
+          msg = serverData.detail.map(d => d.msg || JSON.stringify(d)).join(' ; ');
+        } else if (serverData.message) {
+          msg = serverData.message;
+        } else if (typeof serverData === 'string') {
+          msg = serverData;
+        } else {
+          // fallback para objetos complexos
+          try { msg = JSON.stringify(serverData); } catch { msg = String(serverData); }
+        }
+      } else if (error?.message) {
+        msg = error.message;
+      }
+
       console.error('Erro no cálculo:', error, serverData);
       setErro(msg);
-      toast.error(msg);
+      toast.error(String(msg));
     } finally {
       setLoading(false);
     }
@@ -587,6 +608,7 @@ const Calculadoras = () => {
             borderRadius: '8px',
             marginTop: '20px',
             border: '1px solid #f5c6cb',
+            whiteSpace: 'pre-wrap'
           }}
         >
           <strong>Erro:</strong> {erro}

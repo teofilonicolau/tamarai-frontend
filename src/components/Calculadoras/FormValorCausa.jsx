@@ -1,6 +1,17 @@
 // src/components/Calculadoras/FormValorCausa.jsx
 import React, { useState } from 'react';
 
+/**
+ * FormValorCausa — adapta o formulário para enviar o payload que o backend espera.
+ *
+ * Mapeamento básico (padrão):
+ * - parcelas_vencidas: número (se aplicável) — adicionamos campo quando tipo === 'cobranca'
+ * - valor_mensal: número — preferimos valor_pensao_mensal quando informado, senão
+ *   usamos valor_pretendido como fallback (você pode ajustar a regra conforme necessidade)
+ *
+ * Observação: o backend (Swagger) aceita ao menos { parcelas_vencidas, valor_mensal }.
+ */
+
 const FormValorCausa = ({ onCalcular, loading }) => {
   const [dados, setDados] = useState({
     tipo_acao: 'indenizatoria',
@@ -14,82 +25,96 @@ const FormValorCausa = ({ onCalcular, loading }) => {
     tem_pensao: false,
     valor_pensao_mensal: '',
     idade_beneficiario: '',
-    expectativa_vida: 75
+    expectativa_vida: 75,
+    parcelas_vencidas: '' // novo campo (opcional, usado para cobrança)
   });
 
   const [erros, setErros] = useState({});
 
   const tiposAcao = [
     { value: 'indenizatoria', label: '💰 Ação Indenizatória', descricao: 'Danos morais e/ou materiais' },
-    { value: 'cobranca', label: '�� Ação de Cobrança', descricao: 'Cobrança de valores' },
+    { value: 'cobranca', label: '💸 Ação de Cobrança', descricao: 'Cobrança de valores' },
     { value: 'revisional', label: '📝 Ação Revisional', descricao: 'Revisão de contratos' },
     { value: 'declaratoria', label: '📋 Ação Declaratória', descricao: 'Declaração de direitos' },
     { value: 'execucao', label: '⚖️ Execução', descricao: 'Execução de título' },
     { value: 'cautelar', label: '🚨 Cautelar', descricao: 'Medida cautelar' }
   ];
 
+  const parseMoney = (input) => {
+    if (input == null) return 0;
+    const s = String(input);
+    // Remove texto não numérico exceto . e ,
+    let cleaned = s.replace(/[^\d,.-]/g, '');
+    if (cleaned === '') return 0;
+    // Se contém '.' e ',' assumimos pt-BR ('.' milhares, ',' decimal)
+    if (cleaned.indexOf('.') > -1 && cleaned.indexOf(',') > -1) {
+      cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+    } else {
+      cleaned = cleaned.replace(',', '.');
+    }
+    // Lidar com múltiplos pontos - mantém o último como decimal
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      cleaned = parts.slice(0, -1).join('') + '.' + parts[parts.length - 1];
+    }
+    const n = parseFloat(cleaned);
+    return Number.isFinite(n) ? n : 0;
+  };
+
   const validarFormulario = () => {
     const novosErros = {};
 
-    if (dados.tem_danos_morais && (!dados.valor_danos_morais || parseFloat(dados.valor_danos_morais.replace(/[^\d,]/g, '').replace(',', '.')) <= 0)) {
+    if (dados.tem_danos_morais && parseMoney(dados.valor_danos_morais) <= 0) {
       novosErros.valor_danos_morais = 'Informe o valor dos danos morais';
     }
 
-    if (dados.tem_danos_materiais && (!dados.valor_danos_materiais || parseFloat(dados.valor_danos_materiais.replace(/[^\d,]/g, '').replace(',', '.')) <= 0)) {
+    if (dados.tem_danos_materiais && parseMoney(dados.valor_danos_materiais) <= 0) {
       novosErros.valor_danos_materiais = 'Informe o valor dos danos materiais';
     }
 
-    if (dados.tem_pensao && (!dados.valor_pensao_mensal || parseFloat(dados.valor_pensao_mensal.replace(/[^\d,]/g, '').replace(',', '.')) <= 0)) {
+    if (dados.tem_pensao && parseMoney(dados.valor_pensao_mensal) <= 0) {
       novosErros.valor_pensao_mensal = 'Informe o valor da pensão mensal';
     }
 
-    if (dados.tem_pensao && (!dados.idade_beneficiario || parseInt(dados.idade_beneficiario) <= 0 || parseInt(dados.idade_beneficiario) > 100)) {
-      novosErros.idade_beneficiario = 'Informe uma idade válida (1-100 anos)';
+    if (dados.tem_pensao) {
+      const idade = parseInt(dados.idade_beneficiario, 10) || 0;
+      if (idade <= 0 || idade > 120) {
+        novosErros.idade_beneficiario = 'Informe uma idade válida (1-120 anos)';
+      }
+    }
+
+    // Se for cobrança, validar parcelas_vencidas e valor_pretendido mínimo
+    if (dados.tipo_acao === 'cobranca') {
+      const parcelas = parseInt(dados.parcelas_vencidas, 10);
+      if (isNaN(parcelas) || parcelas < 0) {
+        novosErros.parcelas_vencidas = 'Informe um número válido de parcelas vencidas';
+      }
+      if (parseMoney(dados.valor_pretendido) <= 0) {
+        novosErros.valor_pretendido = 'Informe o valor do título (valor mensal ou pretensão)';
+      }
     }
 
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
   };
 
-  const formatarMoeda = (valor) => {
-    const numero = valor.replace(/\D/g, '');
-    const valorFormatado = (parseFloat(numero) / 100).toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
-    return valorFormatado;
-  };
-
   const handleValorChange = (campo, valor) => {
-    const valorFormatado = formatarMoeda(valor);
-    setDados({...dados, [campo]: valorFormatado});
+    // Armazena valor bruto/formatado conforme edição (mantemos string para edição)
+    setDados(prev => ({ ...prev, [campo]: valor }));
   };
 
   const calcularValorTotal = () => {
     let total = 0;
+    total += parseMoney(dados.valor_pretendido) || 0;
+    if (dados.tem_danos_morais) total += parseMoney(dados.valor_danos_morais);
+    if (dados.tem_danos_materiais) total += parseMoney(dados.valor_danos_materiais);
+    if (dados.tem_lucros_cessantes) total += parseMoney(dados.valor_lucros_cessantes);
 
-    if (dados.valor_pretendido) {
-      total += parseFloat(dados.valor_pretendido.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-    }
-
-    if (dados.tem_danos_morais && dados.valor_danos_morais) {
-      total += parseFloat(dados.valor_danos_morais.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-    }
-
-    if (dados.tem_danos_materiais && dados.valor_danos_materiais) {
-      total += parseFloat(dados.valor_danos_materiais.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-    }
-
-    if (dados.tem_lucros_cessantes && dados.valor_lucros_cessantes) {
-      total += parseFloat(dados.valor_lucros_cessantes.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-    }
-
-    if (dados.tem_pensao && dados.valor_pensao_mensal && dados.idade_beneficiario) {
-      const valorMensal = parseFloat(dados.valor_pensao_mensal.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-      const idade = parseInt(dados.idade_beneficiario) || 0;
-      const anosRestantes = Math.max(0, dados.expectativa_vida - idade);
-      const valorPensao = valorMensal * 12 * anosRestantes;
-      total += valorPensao;
+    if (dados.tem_pensao) {
+      const valorMensal = parseMoney(dados.valor_pensao_mensal);
+      const idade = parseInt(dados.idade_beneficiario, 10) || 0;
+      const anosRestantes = Math.max(0, (dados.expectativa_vida || 75) - idade);
+      total += valorMensal * 12 * anosRestantes;
     }
 
     return total;
@@ -97,22 +122,33 @@ const FormValorCausa = ({ onCalcular, loading }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validarFormulario()) {
-      const dadosParaCalcular = {
-        ...dados,
-        valor_total_calculado: calcularValorTotal(),
-        valor_pretendido: dados.valor_pretendido ? parseFloat(dados.valor_pretendido.replace(/[^\d,]/g, '').replace(',', '.')) : 0,
-        valor_danos_morais: dados.valor_danos_morais ? parseFloat(dados.valor_danos_morais.replace(/[^\d,]/g, '').replace(',', '.')) : 0,
-        valor_danos_materiais: dados.valor_danos_materiais ? parseFloat(dados.valor_danos_materiais.replace(/[^\d,]/g, '').replace(',', '.')) : 0,
-        valor_lucros_cessantes: dados.valor_lucros_cessantes ? parseFloat(dados.valor_lucros_cessantes.replace(/[^\d,]/g, '').replace(',', '.')) : 0,
-        valor_pensao_mensal: dados.valor_pensao_mensal ? parseFloat(dados.valor_pensao_mensal.replace(/[^\d,]/g, '').replace(',', '.')) : 0
-      };
-      onCalcular(dadosParaCalcular);
+    if (!validarFormulario()) return;
+
+    // Construir payload mínimo que o backend espera
+    const parcelas_vencidas = dados.tipo_acao === 'cobranca'
+      ? (parseInt(dados.parcelas_vencidas, 10) || 0)
+      : 0;
+
+    // valor_mensal: se houver pensão -> usar valor_pensao_mensal; se ação de cobrança -> usar valor_pretendido (assumido mensal);
+    // caso contrário fallback para 0 (ou para valor_pretendido, conforme sua regra de negócio)
+    let valor_mensal = 0;
+    if (dados.tem_pensao) {
+      valor_mensal = parseMoney(dados.valor_pensao_mensal);
+    } else if (dados.tipo_acao === 'cobranca') {
+      valor_mensal = parseMoney(dados.valor_pretendido);
+    } else {
+      valor_mensal = 0;
     }
+
+    const payload = {
+      parcelas_vencidas,
+      valor_mensal
+    };
+
+    onCalcular(payload);
   };
 
   const valorTotal = calcularValorTotal();
-  // LINHA REMOVIDA: const tipoSelecionado = tiposAcao.find(t => t.value === dados.tipo_acao);
 
   return (
     <div style={{
@@ -122,7 +158,7 @@ const FormValorCausa = ({ onCalcular, loading }) => {
       padding: '30px'
     }}>
       <h3 style={{ color: '#495057', marginBottom: '25px', textAlign: 'center' }}>
-        �� Cálculo do Valor da Causa
+        💰 Cálculo do Valor da Causa
       </h3>
 
       <form onSubmit={handleSubmit}>
@@ -149,7 +185,7 @@ const FormValorCausa = ({ onCalcular, loading }) => {
                     name="tipo_acao"
                     value={tipo.value}
                     checked={dados.tipo_acao === tipo.value}
-                    onChange={(e) => setDados({...dados, tipo_acao: e.target.value})}
+                    onChange={(e) => setDados(prev => ({ ...prev, tipo_acao: e.target.value }))}
                     style={{ marginRight: '8px' }}
                   />
                   <span style={{ fontSize: '0.9em', fontWeight: 'bold' }}>
@@ -177,181 +213,50 @@ const FormValorCausa = ({ onCalcular, loading }) => {
             style={{
               width: '100%',
               padding: '12px',
-              border: '2px solid #dee2e6',
+              border: `2px solid ${erros.valor_pretendido ? '#dc3545' : '#dee2e6'}`,
               borderRadius: '8px',
               fontSize: '1em'
             }}
           />
+          {erros.valor_pretendido && <div style={{ color: '#dc3545', fontSize: '0.9em', marginTop: '5px' }}>{erros.valor_pretendido}</div>}
           <div style={{ fontSize: '0.9em', color: '#6c757d', marginTop: '5px', fontStyle: 'italic' }}>
             💡 Valor principal da pretensão
           </div>
         </div>
 
-        {/* Danos Morais */}
-        <div style={{
-          background: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '8px',
-          marginBottom: '25px'
-        }}>
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'pointer',
-            marginBottom: '15px'
-          }}>
+        {/* Se for cobrança: parcelas vencidas */}
+        {dados.tipo_acao === 'cobranca' && (
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#495057' }}>
+              📅 Parcelas vencidas
+            </label>
             <input
-              type="checkbox"
-              checked={dados.tem_danos_morais}
-              onChange={(e) => setDados({...dados, tem_danos_morais: e.target.checked})}
-              style={{ marginRight: '10px' }}
+              type="number"
+              min="0"
+              value={dados.parcelas_vencidas}
+              onChange={(e) => setDados(prev => ({ ...prev, parcelas_vencidas: e.target.value }))}
+              style={{
+                width: '150px',
+                padding: '10px',
+                border: `2px solid ${erros.parcelas_vencidas ? '#dc3545' : '#dee2e6'}`,
+                borderRadius: '6px',
+                fontSize: '1em'
+              }}
             />
-            <span style={{ fontWeight: 'bold', color: '#495057' }}>
-              😢 Incluir Danos Morais
-            </span>
-          </label>
-
-          {dados.tem_danos_morais && (
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#495057' }}>
-                Valor dos Danos Morais:
-              </label>
-              <input
-                type="text"
-                value={dados.valor_danos_morais}
-                onChange={(e) => handleValorChange('valor_danos_morais', e.target.value)}
-                placeholder="R$ 0,00"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: `2px solid ${erros.valor_danos_morais ? '#dc3545' : '#dee2e6'}`,
-                  borderRadius: '8px',
-                  fontSize: '1em'
-                }}
-              />
-              {erros.valor_danos_morais && (
-                <div style={{ color: '#dc3545', fontSize: '0.9em', marginTop: '5px' }}>
-                  {erros.valor_danos_morais}
-                </div>
-              )}
+            {erros.parcelas_vencidas && <div style={{ color: '#dc3545', fontSize: '0.9em', marginTop: '5px' }}>{erros.parcelas_vencidas}</div>}
+            <div style={{ fontSize: '0.9em', color: '#6c757d', marginTop: '5px' }}>
+              💡 Número de parcelas em atraso (se aplicável)
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Danos Materiais */}
-        <div style={{
-          background: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '8px',
-          marginBottom: '25px'
-        }}>
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'pointer',
-            marginBottom: '15px'
-          }}>
-            <input
-              type="checkbox"
-              checked={dados.tem_danos_materiais}
-              onChange={(e) => setDados({...dados, tem_danos_materiais: e.target.checked})}
-              style={{ marginRight: '10px' }}
-            />
-            <span style={{ fontWeight: 'bold', color: '#495057' }}>
-              🏠 Incluir Danos Materiais
-            </span>
-          </label>
-
-          {dados.tem_danos_materiais && (
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#495057' }}>
-                Valor dos Danos Materiais:
-              </label>
-              <input
-                type="text"
-                value={dados.valor_danos_materiais}
-                onChange={(e) => handleValorChange('valor_danos_materiais', e.target.value)}
-                placeholder="R$ 0,00"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: `2px solid ${erros.valor_danos_materiais ? '#dc3545' : '#dee2e6'}`,
-                  borderRadius: '8px',
-                  fontSize: '1em'
-                }}
-              />
-              {erros.valor_danos_materiais && (
-                <div style={{ color: '#dc3545', fontSize: '0.9em', marginTop: '5px' }}>
-                  {erros.valor_danos_materiais}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Lucros Cessantes */}
-        <div style={{
-          background: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '8px',
-          marginBottom: '25px'
-        }}>
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'pointer',
-            marginBottom: '15px'
-          }}>
-            <input
-              type="checkbox"
-              checked={dados.tem_lucros_cessantes}
-              onChange={(e) => setDados({...dados, tem_lucros_cessantes: e.target.checked})}
-              style={{ marginRight: '10px' }}
-            />
-            <span style={{ fontWeight: 'bold', color: '#495057' }}>
-              �� Incluir Lucros Cessantes
-            </span>
-          </label>
-
-          {dados.tem_lucros_cessantes && (
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#495057' }}>
-                Valor dos Lucros Cessantes:
-              </label>
-              <input
-                type="text"
-                value={dados.valor_lucros_cessantes}
-                onChange={(e) => handleValorChange('valor_lucros_cessantes', e.target.value)}
-                placeholder="R$ 0,00"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '2px solid #dee2e6',
-                  borderRadius: '8px',
-                  fontSize: '1em'
-                }}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Pensão */}
-        <div style={{
-          background: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '8px',
-          marginBottom: '25px'
-        }}>
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'pointer',
-            marginBottom: '15px'
-          }}>
+        {/* Pensão (se aplicável) */}
+        <div style={{ marginBottom: '25px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginBottom: '15px' }}>
             <input
               type="checkbox"
               checked={dados.tem_pensao}
-              onChange={(e) => setDados({...dados, tem_pensao: e.target.checked})}
+              onChange={(e) => setDados(prev => ({ ...prev, tem_pensao: e.target.checked }))}
               style={{ marginRight: '10px' }}
             />
             <span style={{ fontWeight: 'bold', color: '#495057' }}>
@@ -378,11 +283,7 @@ const FormValorCausa = ({ onCalcular, loading }) => {
                     fontSize: '1em'
                   }}
                 />
-                {erros.valor_pensao_mensal && (
-                  <div style={{ color: '#dc3545', fontSize: '0.8em', marginTop: '3px' }}>
-                    {erros.valor_pensao_mensal}
-                  </div>
-                )}
+                {erros.valor_pensao_mensal && <div style={{ color: '#dc3545', fontSize: '0.8em', marginTop: '3px' }}>{erros.valor_pensao_mensal}</div>}
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#495057' }}>
@@ -391,9 +292,9 @@ const FormValorCausa = ({ onCalcular, loading }) => {
                 <input
                   type="number"
                   value={dados.idade_beneficiario}
-                  onChange={(e) => setDados({...dados, idade_beneficiario: e.target.value})}
+                  onChange={(e) => setDados(prev => ({ ...prev, idade_beneficiario: e.target.value }))}
                   min="0"
-                  max="100"
+                  max="120"
                   style={{
                     width: '100%',
                     padding: '10px',
@@ -402,11 +303,7 @@ const FormValorCausa = ({ onCalcular, loading }) => {
                     fontSize: '1em'
                   }}
                 />
-                {erros.idade_beneficiario && (
-                  <div style={{ color: '#dc3545', fontSize: '0.8em', marginTop: '3px' }}>
-                    {erros.idade_beneficiario}
-                  </div>
-                )}
+                {erros.idade_beneficiario && <div style={{ color: '#dc3545', fontSize: '0.8em', marginTop: '3px' }}>{erros.idade_beneficiario}</div>}
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#495057' }}>
@@ -415,9 +312,9 @@ const FormValorCausa = ({ onCalcular, loading }) => {
                 <input
                   type="number"
                   value={dados.expectativa_vida}
-                  onChange={(e) => setDados({...dados, expectativa_vida: parseInt(e.target.value) || 75})}
+                  onChange={(e) => setDados(prev => ({ ...prev, expectativa_vida: parseInt(e.target.value, 10) || 75 }))}
                   min="50"
-                  max="100"
+                  max="120"
                   style={{
                     width: '100%',
                     padding: '10px',
@@ -448,24 +345,6 @@ const FormValorCausa = ({ onCalcular, loading }) => {
             </p>
           </div>
         )}
-
-        {/* Informações Legais */}
-        <div style={{
-          background: '#e3f2fd',
-          padding: '15px',
-          borderRadius: '8px',
-          marginBottom: '25px'
-        }}>
-          <h4 style={{ margin: '0 0 10px 0', color: '#1565c0' }}>
-            📋 Base Legal:
-          </h4>
-          <ul style={{ margin: '0', paddingLeft: '20px', color: '#1565c0', fontSize: '0.9em' }}>
-            <li><strong>Art. 292 do CPC:</strong> Valor da causa em ações indenizatórias</li>
-            <li><strong>Art. 293 do CPC:</strong> Valor da causa em ações de cobrança</li>
-            <li><strong>Art. 294 do CPC:</strong> Valor da causa em ações declaratórias</li>
-            <li><strong>Lei 11.419/06:</strong> Custas processuais baseadas no valor da causa</li>
-          </ul>
-        </div>
 
         <button
           type="submit"
