@@ -1,6 +1,4 @@
 // src/config/endpoints.js
-
-// src/config/endpoints.js
 // Define os endpoints da API com métodos HTTP e descrições para clareza
 
 export const ENDPOINTS = {
@@ -16,15 +14,37 @@ export const ENDPOINTS = {
   // 🏛️ PETIÇÕES PREVIDENCIÁRIAS
   previdenciario: {
     auxilio_doenca: '/api/v1/previdenciario/peticao-auxilio-doenca', // POST: Petição para auxílio-doença
+    // alias
+    peticao_auxilio_doenca: '/api/v1/previdenciario/peticao-auxilio-doenca',
+
     aposentadoria_invalidez: '/api/v1/previdenciario/peticao-aposentadoria-invalidez', // POST: Petição para aposentadoria por invalidez
+    // aliases (compatibilidade com códigos que usam "peticao_..." ou variações)
+    peticao_aposentadoria_invalidez: '/api/v1/previdenciario/peticao-aposentadoria-invalidez',
+
     aposentadoria_especial: '/api/v1/previdenciario/peticao-aposentadoria-especial', // POST: Petição para aposentadoria especial
+    peticao_aposentadoria_especial: '/api/v1/previdenciario/peticao-aposentadoria-especial',
+
     aposentadoria_tempo_contribuicao: '/api/v1/previdenciario/peticao-aposentadoria-tempo-contribuicao', // POST: Petição para aposentadoria por tempo de contribuição
+    peticao_aposentadoria_tempo_contribuicao: '/api/v1/previdenciario/peticao-aposentadoria-tempo-contribuicao',
+
     aposentadoria_rural: '/api/v1/previdenciario/peticao-aposentadoria-rural', // POST: Petição para aposentadoria rural
+    peticao_aposentadoria_rural: '/api/v1/previdenciario/peticao-aposentadoria-rural',
+
     pensao_morte: '/api/v1/previdenciario/peticao-pensao-morte', // POST: Petição para pensão por morte
+    peticao_pensao_morte: '/api/v1/previdenciario/peticao-pensao-morte',
+
     bpc_loas: '/api/v1/previdenciario/peticao-bpc-loas', // POST: Petição para BPC/LOAS
+    peticao_bpc_loas: '/api/v1/previdenciario/peticao-bpc-loas',
+
     salario_maternidade: '/api/v1/previdenciario/peticao-salario-maternidade', // POST: Petição para salário-maternidade
+    peticao_salario_maternidade: '/api/v1/previdenciario/peticao-salario-maternidade',
+
     revisao_vida_toda: '/api/v1/previdenciario/peticao-revisao-vida-toda', // POST: Petição para revisão da vida toda
+    peticao_revisao_vida_toda: '/api/v1/previdenciario/peticao-revisao-vida-toda',
+
     revisao_beneficio: '/api/v1/previdenciario/peticao-revisao-beneficio', // POST: Petição para revisão de benefício
+    peticao_revisao_beneficio: '/api/v1/previdenciario/peticao-revisao-beneficio',
+
     peticao_com_calculo: '/api/v1/previdenciario/peticao-com-calculo', // POST: Petição com cálculos previdenciários
     peticao_pdf: '/api/v1/previdenciario/peticao-pdf' // POST: Geração de petição em PDF
   },
