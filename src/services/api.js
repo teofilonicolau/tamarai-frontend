@@ -1,42 +1,47 @@
-
 import axios from 'axios';
 
-// Try multiple env vars for compatibility and provide sensible dev default
-const baseURL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''));
+// Prefer explicit env vars: primeiro VITE_API_BASE_URL, depois VITE_API_URL
+const envBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '';
 
-// Trim trailing slashes if any
-const normalizedBaseURL = baseURL ? baseURL.replace(/\/+$/, '') : '';
+// Normalize (remove trailing slash) and decide fallback for DEV
+let baseURL = envBase ? String(envBase).replace(/\/+$/, '') : '';
 
-// Create axios instance
+// Dev fallback (use localhost backend for local testing).
+// In CI/production we want baseURL to be explicitly configured.
+if (!baseURL && import.meta.env.DEV) {
+  baseURL = 'http://127.0.0.1:8000';
+  if (import.meta.env.DEV) {
+    console.warn('[API] VITE_API_BASE_URL/VITE_API_URL not set — using local fallback:', baseURL);
+    console.info('[API] To use remote backend, set VITE_API_BASE_URL in .env.local and restart dev server.');
+  }
+}
+
 const api = axios.create({
-  baseURL: normalizedBaseURL,
+  baseURL,
   timeout: 60000,
   withCredentials: false,
 });
 
-// Interceptor de requisição
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Token (se houver)
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Content-Type dinâmico: se for FormData, deixa o browser setar
     const isFormData = config.data instanceof FormData;
     if (!isFormData && !config.headers['Content-Type']) {
       config.headers['Content-Type'] = 'application/json';
     }
 
-    // Aceita JSON e texto
     if (!config.headers.Accept) {
       config.headers.Accept = 'application/json, text/plain, */*';
     }
 
     if (import.meta.env.DEV) {
       const dataForLog = config.data ? JSON.parse(JSON.stringify(config.data)) : null;
-      console.debug('[API REQUEST]', config.method?.toUpperCase(), config.baseURL || '', config.url, 'params:', config.params || {}, 'body:', dataForLog);
+      console.debug('[API REQUEST]', config.method?.toUpperCase(), config.baseURL || '', config.url, 'body:', dataForLog);
     }
 
     return config;
@@ -44,11 +49,12 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Interceptor de resposta
+// Response interceptor
 api.interceptors.response.use(
   (response) => {
-    if (import.meta.env.DEV) console.debug('[API RESPONSE]', response.status, response.config.url, response.data);
-
+    if (import.meta.env.DEV) {
+      console.debug('[API RESPONSE]', response.status, response.config.url);
+    }
     const ct = (response.headers?.['content-type'] || '').toLowerCase();
     if (typeof response.data === 'string' && ct.includes('text/plain')) {
       return { ...response, data: { message: response.data } };
@@ -59,7 +65,6 @@ api.interceptors.response.use(
     if (import.meta.env.DEV) {
       console.error('[API ERROR]', error?.response?.status, error?.config?.url, error?.response?.data || error.message);
     }
-
     const status = error?.response?.status || 0;
     const ct = (error?.response?.headers?.['content-type'] || '').toLowerCase();
     let message = error?.message || 'Erro na requisição';
@@ -76,7 +81,7 @@ api.interceptors.response.use(
   },
 );
 
-// Helpers que retornam apenas response.data para simplificar uso
+// Helpers
 export const http = {
   get: (url, config) => api.get(url, config).then((r) => r.data),
   post: (url, body, config) => api.post(url, body, config).then((r) => r.data),
