@@ -10,50 +10,96 @@ let baseURL = envBase ? String(envBase).replace(/\/+$/, '') : '';
 // In CI/production we want baseURL to be explicitly configured.
 if (!baseURL && import.meta.env.DEV) {
   baseURL = 'http://127.0.0.1:8000';
-  if (import.meta.env.DEV) {
-    console.warn('[API] VITE_API_BASE_URL/VITE_API_URL not set — using local fallback:', baseURL);
-    console.info('[API] To use remote backend, set VITE_API_BASE_URL in .env.local and restart dev server.');
-  }
+  console.warn('[API] VITE_API_BASE_URL/VITE_API_URL not set — using local fallback:', baseURL);
+  console.info('[API] To use remote backend, set VITE_API_BASE_URL in .env.local and restart dev server.');
 }
 
 const api = axios.create({
   baseURL,
-  timeout: 60000,
+  timeout: 120000, // 2 minutos — ideal para endpoints lentos com IA
   withCredentials: false,
 });
 
-// Request interceptor
+// === RETRY LOGIC (1 retry com delay de 1s) ===
+const MAX_RETRIES = 1;
+const RETRY_DELAY = 1000; // ms
+
+api.interceptors.request.use((config) => {
+  config.retryCount = config.retryCount || 0;
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const config = error.config;
+
+    // Só retry em caso de timeout ou erro de rede (sem resposta)
+    if (
+      config.retryCount < MAX_RETRIES &&
+      (!error.response || error.code === 'ECONNABORTED')
+    ) {
+      config.retryCount += 1;
+
+      if (import.meta.env.DEV) {
+        console.warn(
+          `[API RETRY] Tentativa ${config.retryCount}/${MAX_RETRIES} para ${config.method?.toUpperCase()} ${config.url}`
+        );
+      }
+
+      // Delay antes do retry
+      return new Promise((resolve) => setTimeout(() => resolve(axios(config)), RETRY_DELAY));
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+// === REQUEST INTERCEPTOR (mantido original com melhorias) ===
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    try {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
+      }
 
-    const isFormData = config.data instanceof FormData;
-    if (!isFormData && !config.headers['Content-Type']) {
-      config.headers['Content-Type'] = 'application/json';
-    }
+      const isFormData = config.data instanceof FormData;
+      config.headers = config.headers || {};
+      if (!isFormData && !config.headers['Content-Type']) {
+        config.headers['Content-Type'] = 'application/json';
+      }
 
-    if (!config.headers.Accept) {
-      config.headers.Accept = 'application/json, text/plain, */*';
-    }
+      if (!config.headers.Accept) {
+        config.headers.Accept = 'application/json, text/plain, */*';
+      }
 
-    if (import.meta.env.DEV) {
-      const dataForLog = config.data ? JSON.parse(JSON.stringify(config.data)) : null;
-      console.debug('[API REQUEST]', config.method?.toUpperCase(), config.baseURL || '', config.url, 'body:', dataForLog);
+      if (import.meta.env.DEV) {
+        const dataForLog = config.data ? JSON.parse(JSON.stringify(config.data)) : null;
+        console.debug(
+          '[API REQUEST]',
+          (config.method || '').toUpperCase(),
+          config.baseURL || '',
+          config.url,
+          'body:',
+          dataForLog
+        );
+      }
+    } catch (e) {
+      console.error('[API] request interceptor error', e);
     }
 
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor
+// === RESPONSE INTERCEPTOR (mantido original com tratamento de text/plain) ===
 api.interceptors.response.use(
   (response) => {
     if (import.meta.env.DEV) {
-      console.debug('[API RESPONSE]', response.status, response.config.url);
+      console.debug('[API RESPONSE]', response.status, response.config?.url);
     }
     const ct = (response.headers?.['content-type'] || '').toLowerCase();
     if (typeof response.data === 'string' && ct.includes('text/plain')) {
@@ -75,13 +121,15 @@ api.interceptors.response.use(
     }
 
     if (data?.message) message = data.message;
-    if (data?.detail) message = data.detail;
+    if (data?.detail) {
+      message = data.detail;
+    }
 
     return Promise.reject({ status, message, data });
-  },
+  }
 );
 
-// Helpers
+// === HELPERS (mantidos) ===
 export const http = {
   get: (url, config) => api.get(url, config).then((r) => r.data),
   post: (url, body, config) => api.post(url, body, config).then((r) => r.data),
@@ -94,7 +142,9 @@ export const http = {
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = filename || 'arquivo.pdf';
+    document.body.appendChild(link);
     link.click();
+    link.remove();
     URL.revokeObjectURL(link.href);
   },
 };

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import DOMPurify from 'dompurify';
 import jsPDF from 'jspdf';
@@ -18,10 +18,19 @@ const Preview = ({ peticao, content, title }) => {
   const previewRef = useRef(null);
   const [showDados, setShowDados] = useState(false);
 
-  const texto = (peticao?.texto_peticao ?? content ?? '').replace(
+  // monta o texto que será exibido
+  const textoRaw = (peticao?.texto_peticao ?? content ?? '').replace(
     /⚠️ Chave OpenAI não configurada no arquivo \.env\s*/g,
     ''
-  ).trim();
+  );
+
+  // log para debug (apenas em DEV)
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.debug('[Preview] peticao object:', peticao);
+      console.debug('[Preview] texto length:', textoRaw?.length);
+    }
+  }, [peticao, textoRaw]);
 
   const copiarTexto = () => {
     if (previewRef.current) {
@@ -45,7 +54,7 @@ const Preview = ({ peticao, content, title }) => {
     try {
       toast.loading('Solicitando PDF ao servidor...');
       const endpoint = ENDPOINTS.previdenciario?.peticao_pdf || '/api/v1/previdenciario/peticao-pdf';
-      const payload = peticao?.dados_utilizados ? peticao.dados_utilizados : { texto_peticao: texto };
+      const payload = peticao?.dados_utilizados ? peticao.dados_utilizados : { texto_peticao: textoRaw };
       const resp = await api.post(endpoint, payload, { responseType: 'blob' });
       downloadBlob(resp.data, `peticao-${peticao?.tipo ?? 'documento'}.pdf`);
       toast.dismiss();
@@ -61,7 +70,7 @@ const Preview = ({ peticao, content, title }) => {
   const gerarPdfClient = () => {
     try {
       const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-      const lines = texto.split('\n');
+      const lines = textoRaw.split('\n');
       const margin = 40;
       let y = 40;
       const lineHeight = 14;
@@ -86,13 +95,26 @@ const Preview = ({ peticao, content, title }) => {
   };
 
   const renderRich = () => {
+    const texto = textoRaw ?? '';
     const maybeHtml = /<\/?[a-z][\s\S]*>/i.test(texto);
+
     if (maybeHtml) {
+      // Se o backend retornou HTML, sanitiza e renderiza
       const sanitized = DOMPurify.sanitize(texto);
       return <div dangerouslySetInnerHTML={{ __html: sanitized }} />;
     }
-    const paragraphs = texto.split(/\n{2,}/).map((p, idx) => <p key={idx} style={{ marginBottom: '0.8em', lineHeight: '1.45' }}>{p}</p>);
-    return <div>{paragraphs}</div>;
+
+    // Plain text: preserva todas as quebras de linha usando <pre> / white-space: pre-wrap
+    // Segurança: não executamos HTML aqui, porque é texto puro
+    return (
+      <pre
+        ref={previewRef}
+        className="whitespace-pre-wrap text-gray-800 dark:text-gray-200"
+        style={{ fontFamily: 'inherit', fontSize: '0.95rem', whiteSpace: 'pre-wrap', lineHeight: 1.45 }}
+      >
+        {texto}
+      </pre>
+    );
   };
 
   const baixarJson = () => {
@@ -124,7 +146,7 @@ const Preview = ({ peticao, content, title }) => {
         </div>
       </div>
 
-      <div ref={previewRef} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg max-h-[60vh] overflow-y-auto text-gray-800 dark:text-gray-200">
+      <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg max-h-[60vh] overflow-y-auto">
         {renderRich()}
       </div>
 
